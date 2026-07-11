@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  body{margin:0;background:#edf0ea;font-family:'Noto Sans SC',system-ui,sans-serif;color:#1c231d}
+  *{-webkit-font-smoothing:antialiased;box-sizing:border-box}
+  a{color:#3f6b45}
+  a:hover{color:#2f5334}
+</style>
+</helmet>
+
+<div style="max-width:1080px;margin:0 auto;padding:64px 56px 96px">
+
+  <!-- MASTHEAD -->
+  <div style="border:1px solid #1c231d;background:#1c231d;color:#e9ede6;padding:34px 36px">
+    <div style="font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.22em;color:#8fb18a">POUR.LOG / DESIGN SYSTEM</div>
+    <h1 style="margin:14px 0 0;font-size:44px;font-weight:900;letter-spacing:.01em">手冲陪学 · 设计系统</h1>
+    <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#b7c1b1;margin-top:14px;line-height:1.9">theme = 森林绿 · Forest Green<br>实验室 / 极客数据化 · 等宽字管数据 · 黑体管标题 · 直角描边 · 单一强调绿</div>
+  </div>
+
+  <!-- 01 COLOR -->
+  <div style="margin-top:48px">
+    <div style="display:flex;align-items:baseline;gap:12px;border-bottom:1px solid #1c231d;padding-bottom:10px">
+      <span style="font-family:'JetBrains Mono',monospace;font-size:13px;color:#3f6b45;font-weight:700">01</span>
+      <h2 style="margin:0;font-size:22px;font-weight:900">色彩 · Color</h2>
+      <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#9aa295">core tokens</span>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:22px">
+      <sc-for list="{{ coreColors }}" as="c" hint-placeholder-count="8">
+        <div style="border:1px solid #d5dbcf;background:#f6f8f3">
+          <div style="height:88px;background:{{ c.hex }};border-bottom:1px solid #d5dbcf"></div>
+          <div style="padding:11px 12px">
+            <div style="font-size:13px;font-weight:700">{{ c.name }}</div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6f776d;margin-top:3px">{{ c.hex }}</div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#9aa295;margin-top:2px">{{ c.token }}</div>
+            <div style="font-size:11px;color:#6f776d;line-height:1.6;margin-top:7px">{{ c.desc }}</div>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+
+    <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;color:#9aa295;margin-top:26px">文字灰阶 · TEXT GRAYS</div>
+    <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:12px">
+      <sc-for list="{{ grays }}" as="g" hint-placeholder-count="5">
+        <div style="border:1px solid #d5dbcf;background:#f6f8f3;padding:12px 14px;min-width:150px">
+          <div style="font-size:15px;font-weight:700;color:{{ g.hex }}">{{ g.name }}</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#9aa295;margin-top:5px">{{ g.hex }} · {{ g.token }}</div>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+
+  <!-- 02 TYPE -->
+  <div style="margin-top:48px">
+    <div style="display:flex;align-items:baseline;gap:12px;border-bottom:1px solid #1c231d;padding-bottom:10px">
+      <span style="font-family:'JetBrains Mono',monospace;font-size:13px;color:#3f6b45;font-weight:700">02</span>
+      <h2 style="margin:0;font-size:22px;font-weight:900">字体 · Type</h2>
+      <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#9aa295">Noto Sans SC + JetBrains Mono</span>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:22px">
+      <div style="border:1px solid #d5dbcf;background:#f6f8f3;padding:20px">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;color:#9aa295">SANS · 标题 / 正文</div>
+        <div style="font-size:34px;font-weight:900;margin-top:10px">耶加雪菲</div>
+        <div style="font-size:15px;font-weight:500;margin-top:8px">花香很清楚,尾段回甘明显。</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6f776d;margin-top:12px">300 · 400 · 500 · 700 · 900</div>
+      </div>
+      <div style="border:1px solid #d5dbcf;background:#f6f8f3;padding:20px">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;color:#9aa295">MONO · 数据 / 参数 / 标签</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:26px;font-weight:700;margin-top:12px">1:16 · 88°C</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:13px;color:#4a524a;margin-top:10px">POUR.LOG / 手冲陪学</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6f776d;margin-top:12px">400 · 500 · 700</div>
+      </div>
+    </div>
+
+    <div style="border:1px solid #d5dbcf;background:#f6f8f3;margin-top:16px">
+      <sc-for list="{{ typeScale }}" as="t" hint-placeholder-count="7">
+        <div style="display:flex;align-items:baseline;gap:18px;padding:14px 20px;border-top:1px solid #eef1ec">
+          <span style="width:120px;flex:none;font-family:'JetBrains Mono',monospace;font-size:11px;color:#9aa295">{{ t.meta }}</span>
+          <span style="flex:1;{{ t.css }}">{{ t.sample }}</span>
+          <span style="flex:none;font-size:11px;color:#6f776d;width:130px;text-align:right">{{ t.use }}</span>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+
+  <!-- 03 COMPONENTS -->
+  <div style="margin-top:48px">
+    <div style="display:flex;align-items:baseline;gap:12px;border-bottom:1px solid #1c231d;padding-bottom:10px">
+      <span style="font-family:'JetBrains Mono',monospace;font-size:13px;color:#3f6b45;font-weight:700">03</span>
+      <h2 style="margin:0;font-size:22px;font-weight:900">组件 · Components</h2>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:22px">
+
+      <!-- buttons -->
+      <div style="border:1px solid #d5dbcf;background:#f6f8f3;padding:20px">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;color:#9aa295">按钮 · BUTTONS</div>
+        <div style="display:flex;flex-direction:column;gap:10px;margin-top:14px">
+          <button style="background:#3f6b45;border:none;color:#fff;font-family:'JetBrains Mono',monospace;font-size:13px;letter-spacing:.12em;padding:15px;cursor:pointer">▸ 主按钮 PRIMARY</button>
+          <button style="background:#1c231d;border:none;color:#e9ede6;font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.1em;padding:12px;cursor:pointer">下一步 · 墨色 DARK</button>
+          <button style="background:none;border:1px dashed #b7c1b1;color:#6f776d;font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.1em;padding:14px;cursor:pointer">+ 虚线 GHOST</button>
+          <button style="background:none;border:1px solid #c15a3c;color:#c15a3c;font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.08em;padding:12px;cursor:pointer">✕ 危险 DANGER</button>
+        </div>
+      </div>
+
+      <!-- pills & tags -->
+      <div style="border:1px solid #d5dbcf;background:#f6f8f3;padding:20px">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;color:#9aa295">选择器 & 标签 · PILLS / TAGS</div>
+        <div style="font-size:11px;color:#6f776d;margin-top:12px">实心 · pill-solid</div>
+        <div style="display:flex;gap:7px;margin-top:8px">
+          <span style="border:1px solid #3f6b45;background:#3f6b45;color:#fff;font-family:'JetBrains Mono',monospace;font-size:12px;padding:8px 13px">热冲</span>
+          <span style="border:1px solid #d5dbcf;color:#6f776d;font-family:'JetBrains Mono',monospace;font-size:12px;padding:8px 13px">冰冲</span>
+          <span style="border:1px solid #d5dbcf;color:#6f776d;font-family:'JetBrains Mono',monospace;font-size:12px;padding:8px 13px">冷萃</span>
+        </div>
+        <div style="font-size:11px;color:#6f776d;margin-top:14px">描边 · pill-outline</div>
+        <div style="display:flex;gap:7px;margin-top:8px">
+          <span style="border:1px solid #3f6b45;background:#f6f8f3;color:#3f6b45;font-family:'JetBrains Mono',monospace;font-size:12px;padding:8px 13px">已选</span>
+          <span style="border:1px solid #d5dbcf;color:#6f776d;font-family:'JetBrains Mono',monospace;font-size:12px;padding:8px 13px">未选</span>
+        </div>
+        <div style="font-size:11px;color:#6f776d;margin-top:14px">风味标签 & 徽标</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;align-items:center">
+          <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#3f6b45;border:1px solid #d5dbcf;padding:2px 8px">柑橘</span>
+          <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#3f6b45;border:1px solid #d5dbcf;padding:2px 8px">茉莉</span>
+          <span style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#fff;background:#3f6b45;padding:2px 6px;letter-spacing:.08em">★BEST</span>
+        </div>
+      </div>
+
+      <!-- bean card -->
+      <div style="border:1px solid #d5dbcf;background:#f6f8f3;padding:20px">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;color:#9aa295">卡片 · CARD</div>
+        <div style="background:#fff;border:1px solid #d5dbcf;margin-top:12px;padding:14px 15px">
+          <div style="display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;font-size:10px;color:#9aa295;letter-spacing:.05em">
+            <span>[01] 水洗 · 浅烘 · 06.28</span><span>n=5</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;margin-top:9px">
+            <span style="font-size:20px;font-weight:700">耶加雪菲</span>
+            <span style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#fff;background:#3f6b45;padding:2px 6px;letter-spacing:.08em">★BEST</span>
+          </div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6f776d;margin-top:4px">埃塞俄比亚 · 科契尔</div>
+        </div>
+      </div>
+
+      <!-- spec grid -->
+      <div style="border:1px solid #d5dbcf;background:#f6f8f3;padding:20px">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;color:#9aa295">规格网格 · SPEC GRID</div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);border:1px solid #1c231d;margin-top:12px;background:#fff">
+          <sc-for list="{{ specs }}" as="s" hint-placeholder-count="6">
+            <div style="padding:11px 10px;border-right:1px solid #d5dbcf;border-bottom:1px solid #d5dbcf">
+              <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#9aa295;letter-spacing:.05em">{{ s.k }}</div>
+              <div style="font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:500;margin-top:4px">{{ s.v }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+
+      <!-- data bars -->
+      <div style="border:1px solid #d5dbcf;background:#f6f8f3;padding:20px">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;color:#9aa295">六维数据条 · DATA BARS</div>
+        <div style="margin-top:14px;display:flex;flex-direction:column;gap:9px">
+          <sc-for list="{{ dims }}" as="d" hint-placeholder-count="6">
+            <div style="display:flex;align-items:center;gap:10px">
+              <span style="width:52px;font-family:'JetBrains Mono',monospace;font-size:12px;color:#4a524a">{{ d.name }}</span>
+              <div style="flex:1;height:8px;background:#e0e5db"><div style="height:8px;background:{{ d.hot }};width:{{ d.pct }}"></div></div>
+              <span style="width:14px;text-align:right;font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:{{ d.hot }}">{{ d.value }}</span>
+            </div>
+          </sc-for>
+        </div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#9aa295;margin-top:12px">苦≥4 / 干净度≤2 → 转警示红 #c15a3c</div>
+      </div>
+
+      <!-- chrome bits -->
+      <div style="border:1px solid #d5dbcf;background:#f6f8f3;padding:20px">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;color:#9aa295">深底 & 导航 · CHROME</div>
+        <div style="background:#1c231d;color:#e9ede6;padding:14px 16px;margin-top:12px">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.22em;color:#8fb18a">POUR.LOG / 手冲陪学</div>
+          <div style="font-size:22px;font-weight:900;margin-top:8px">豆样本库</div>
+        </div>
+        <div style="display:flex;background:#fff;border:1px solid #d5dbcf;border-top:none;height:56px">
+          <button style="flex:1;background:none;border:none;border-top:2px solid #3f6b45;cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.1em;color:#1c231d">BEANS</button>
+          <button style="flex:1;background:none;border:none;border-top:2px solid transparent;cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.1em;color:#9aa295">JOURNAL</button>
+          <button style="flex:1;background:none;border:none;border-top:2px solid transparent;cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.1em;color:#9aa295">RECIPES</button>
+        </div>
+        <div style="display:flex;justify-content:center;margin-top:16px">
+          <div style="background:#1c231d;color:#e9ede6;font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.04em;padding:10px 16px;box-shadow:0 8px 24px rgba(28,35,29,.3)">已保存 ✓ · toast</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 04 PRINCIPLES -->
+  <div style="margin-top:48px">
+    <div style="display:flex;align-items:baseline;gap:12px;border-bottom:1px solid #1c231d;padding-bottom:10px">
+      <span style="font-family:'JetBrains Mono',monospace;font-size:13px;color:#3f6b45;font-weight:700">04</span>
+      <h2 style="margin:0;font-size:22px;font-weight:900">原则 · Principles</h2>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-top:22px">
+      <sc-for list="{{ principles }}" as="p" hint-placeholder-count="4">
+        <div style="border:1px solid #d5dbcf;background:#f6f8f3;padding:16px 18px">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#3f6b45;font-weight:700">{{ p.n }}</div>
+          <div style="font-size:15px;font-weight:700;margin-top:6px">{{ p.title }}</div>
+          <div style="font-size:13px;color:#4a524a;line-height:1.8;margin-top:6px">{{ p.body }}</div>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+
+  <!-- 05 RESPONSIVE & LAYOUT -->
+  <div style="margin-top:48px">
+    <div style="display:flex;align-items:baseline;gap:12px;border-bottom:1px solid #1c231d;padding-bottom:10px">
+      <span style="font-family:'JetBrains Mono',monospace;font-size:13px;color:#3f6b45;font-weight:700">05</span>
+      <h2 style="margin:0;font-size:22px;font-weight:900">响应式与布局 · Layout</h2>
+      <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#9aa295">breakpoint / layout / z-index / motion</span>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:22px">
+      <sc-for list="{{ breakpoints }}" as="b" hint-placeholder-count="4">
+        <div style="border:1px solid #d5dbcf;background:#f6f8f3">
+          <div style="background:#1c231d;color:#8fb18a;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.1em;padding:9px 12px;display:flex;justify-content:space-between"><span>{{ b.name }}</span><span style="color:#e9ede6">{{ b.range }}</span></div>
+          <div style="padding:12px 13px;font-size:12px;color:#4a524a;line-height:1.9">{{ b.rules }}</div>
+          <div style="border-top:1px solid #eef1ec;padding:9px 13px;font-family:'JetBrains Mono',monospace;font-size:10px;color:#9aa295;line-height:1.9">{{ b.nums }}</div>
+        </div>
+      </sc-for>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px">
+      <div style="border:1px solid #d5dbcf;background:#f6f8f3;padding:18px 20px">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;color:#9aa295">布局 TOKEN</div>
+        <div style="margin-top:10px">
+          <sc-for list="{{ layoutTokens }}" as="t" hint-placeholder-count="8">
+            <div style="display:flex;justify-content:space-between;gap:12px;padding:6px 0;border-bottom:1px solid #eef1ec;font-family:'JetBrains Mono',monospace;font-size:11px"><span style="color:#4a524a">{{ t.k }}</span><span style="color:#1c231d;font-weight:700;text-align:right">{{ t.v }}</span></div>
+          </sc-for>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <div style="border:1px solid #d5dbcf;background:#f6f8f3;padding:18px 20px">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;color:#9aa295">动效 MOTION</div>
+          <div style="margin-top:10px;font-family:'JetBrains Mono',monospace;font-size:11px;color:#4a524a;line-height:2.1">fast 120ms · base 160ms · panel 220ms<br>ease = cubic-bezier(0.2, 0, 0, 1)<br>仅动画 opacity / transform / bg / border-color<br>reduced-motion → 全部归零,瞬时切换</div>
+        </div>
+        <div style="border:1px solid #d5dbcf;background:#f6f8f3;padding:18px 20px">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;color:#9aa295">层级 Z-INDEX · 交互尺寸</div>
+          <div style="margin-top:10px;font-family:'JetBrains Mono',monospace;font-size:11px;color:#4a524a;line-height:2.1">nav 100 · sticky 200 · overlay 900 · dialog 1000<br>控件高 48 · 紧凑 36 · 输入框 46 · 移动 CTA 52<br>最小触控 44×44(硬约束) · thumb 视觉 20/命中 44</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 06 STATE MATRIX -->
+  <div style="margin-top:48px">
+    <div style="display:flex;align-items:baseline;gap:12px;border-bottom:1px solid #1c231d;padding-bottom:10px">
+      <span style="font-family:'JetBrains Mono',monospace;font-size:13px;color:#3f6b45;font-weight:700">06</span>
+      <h2 style="margin:0;font-size:22px;font-weight:900">状态矩阵 · States</h2>
+      <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#9aa295">button / pill · focus ring = 2px #3f6b45 offset 2px</span>
+    </div>
+
+    <div style="border:1px solid #d5dbcf;background:#f6f8f3;margin-top:22px;padding:6px 20px 18px">
+      <sc-for list="{{ btnMatrix }}" as="row" hint-placeholder-count="6">
+        <div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid #eef1ec">
+          <div style="width:110px;flex:none;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;color:#4a524a;line-height:1.7">{{ row.name }}<br><span style="color:#9aa295">{{ row.en }}</span></div>
+          <sc-for list="{{ row.cells }}" as="c" hint-placeholder-count="5">
+            <div style="flex:1;display:flex;flex-direction:column;gap:6px;align-items:stretch">
+              <span style="text-align:center;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.06em;padding:11px 6px;{{ c.css }}">{{ c.text }}</span>
+              <span style="text-align:center;font-family:'JetBrains Mono',monospace;font-size:9px;color:#9aa295;letter-spacing:.08em">{{ c.state }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </sc-for>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#9aa295;margin-top:14px;line-height:1.9">loading 保留原宽,文案换 mono 进行时(如 SAVING…),无 spinner · disabled 一律 cursor:not-allowed · Danger Solid 只出现在 Dialog 确认位</div>
+    </div>
+
+    <div style="border:1px solid #d5dbcf;background:#f6f8f3;margin-top:16px;padding:18px 20px">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;color:#9aa295">PILL · SEGMENT 状态</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px">
+        <sc-for list="{{ pillStates }}" as="p" hint-placeholder-count="4">
+          <div style="display:flex;flex-direction:column;gap:6px;align-items:center">
+            <span style="font-family:'JetBrains Mono',monospace;font-size:12px;padding:8px 14px;{{ p.css }}">{{ p.text }}</span>
+            <span style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#9aa295;letter-spacing:.08em">{{ p.state }}</span>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </div>
+
+  <!-- 07 FORMS -->
+  <div style="margin-top:48px">
+    <div style="display:flex;align-items:baseline;gap:12px;border-bottom:1px solid #1c231d;padding-bottom:10px">
+      <span style="font-family:'JetBrains Mono',monospace;font-size:13px;color:#3f6b45;font-weight:700">07</span>
+      <h2 style="margin:0;font-size:22px;font-weight:900">表单 · Forms</h2>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:22px">
+      <sc-for list="{{ inputStates }}" as="i" hint-placeholder-count="6">
+        <div style="border:1px solid #d5dbcf;background:#f6f8f3;padding:16px">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.1em;color:#9aa295">{{ i.state }}</div>
+          <div style="display:flex;align-items:baseline;gap:6px;margin-top:10px">
+            <span style="font-size:13px;font-weight:700;color:#2a322a">{{ i.label }}</span>
+            <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:{{ i.reqColor }}">{{ i.req }}</span>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;height:46px;padding:0 12px;margin-top:7px;{{ i.boxCss }}">
+            <span style="font-family:'JetBrains Mono',monospace;font-size:13px;color:{{ i.valColor }}">{{ i.value }}</span>
+            <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#9aa295">{{ i.unit }}</span>
+          </div>
+          <div style="font-size:11px;line-height:1.7;margin-top:6px;min-height:18px;color:{{ i.msgColor }}">{{ i.msg }}</div>
+        </div>
+      </sc-for>
+    </div>
+
+    <div style="border:1px solid #d5dbcf;background:#f6f8f3;margin-top:16px;padding:18px 20px">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;color:#9aa295">数值输入规则 · NUMERIC RULES</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 32px;margin-top:12px;font-size:12px;color:#4a524a;line-height:2">
+        <div>· 单位固定在框内右侧,mono muted;label 不带单位</div>
+        <div>· 移动端 inputmode=decimal,不用原生 stepper</div>
+        <div>· 空值 ≠ 0:空显示占位符,0 是合法录入值</div>
+        <div>· 冷萃水温为 null:录入留空,展示为「—」</div>
+        <div>· 超范围/非法字符:红描边+行下红字,不清空输入</div>
+        <div>· 错误文案占位预留(min-height),出现时页面不跳动</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 08 FEEDBACK -->
+  <div style="margin-top:48px">
+    <div style="display:flex;align-items:baseline;gap:12px;border-bottom:1px solid #1c231d;padding-bottom:10px">
+      <span style="font-family:'JetBrains Mono',monospace;font-size:13px;color:#3f6b45;font-weight:700">08</span>
+      <h2 style="margin:0;font-size:22px;font-weight:900">反馈 · Feedback</h2>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-top:22px">
+      <sc-for list="{{ banners }}" as="b" hint-placeholder-count="4">
+        <div style="background:{{ b.bg }};border:1px solid {{ b.border }};padding:13px 15px">
+          <div style="display:flex;align-items:baseline;gap:8px">
+            <span style="font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;letter-spacing:.08em;color:{{ b.titleColor }}">{{ b.icon }} {{ b.title }}</span>
+            <span style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#9aa295;letter-spacing:.08em">{{ b.kind }}</span>
+          </div>
+          <div style="font-size:12px;color:#4a524a;line-height:1.8;margin-top:5px">{{ b.body }}</div>
+        </div>
+      </sc-for>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px">
+      <div style="border:1px solid #d5dbcf;background:#f6f8f3;padding:18px 20px">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;color:#9aa295">空状态 · EMPTY</div>
+        <div style="border:1px dashed #b7c1b1;margin-top:12px;padding:26px 20px;text-align:center">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.12em;color:#9aa295">// NO SAMPLES</div>
+          <div style="font-size:13px;color:#6f776d;margin-top:8px">还没有豆子。录入第一支,开始建立你的样本库。</div>
+          <button style="background:none;border:1px dashed #b7c1b1;color:#6f776d;font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.1em;padding:12px 20px;margin-top:14px;cursor:pointer">+ 录入豆子</button>
+        </div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#9aa295;margin-top:12px;line-height:1.8">结构固定:mono 状态行 + 一句说明 + dashed 新增 CTA · 不用插画</div>
+      </div>
+      <div style="border:1px solid #d5dbcf;background:#f6f8f3;padding:18px 20px">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;color:#9aa295">加载 & TOAST 行为</div>
+        <div style="display:flex;flex-direction:column;gap:10px;margin-top:12px">
+          <button style="background:#3f6b45;border:none;color:#fff;font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.12em;padding:13px;opacity:.85;cursor:wait">SAVING…</button>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6f776d;padding:10px 0">LOADING ▮▮▮▯▯ · 区块加载用 mono 文案,不用 spinner</div>
+          <div style="align-self:center;background:#1c231d;color:#e9ede6;font-family:'JetBrains Mono',monospace;font-size:12px;padding:10px 16px;box-shadow:0 8px 24px rgba(28,35,29,.3)">已保存 ✓</div>
+        </div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#9aa295;margin-top:12px;line-height:1.8">toast:手机底部居中(导航上方 12px)/桌面右下 24px · 最大宽 360 · 2.4s 自动消失 · 单条替换不堆叠 · 无关闭按钮 · aria-live=polite</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 09 DECISIONS -->
+  <div style="margin-top:48px">
+    <div style="display:flex;align-items:baseline;gap:12px;border-bottom:1px solid #1c231d;padding-bottom:10px">
+      <span style="font-family:'JetBrains Mono',monospace;font-size:13px;color:#3f6b45;font-weight:700">09</span>
+      <h2 style="margin:0;font-size:22px;font-weight:900">决策记录 · Decisions</h2>
+      <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#9aa295">任务书 §18 · 15 项开放项决议</span>
+    </div>
+    <div style="border:1px solid #d5dbcf;background:#f6f8f3;margin-top:22px;padding:6px 20px">
+      <sc-for list="{{ decisions }}" as="d" hint-placeholder-count="15">
+        <div style="display:flex;gap:16px;align-items:baseline;padding:10px 0;border-bottom:1px solid #eef1ec">
+          <span style="flex:none;width:26px;font-family:'JetBrains Mono',monospace;font-size:11px;color:#3f6b45;font-weight:700">{{ d.n }}</span>
+          <span style="flex:1;font-size:13px;color:#4a524a">{{ d.q }}</span>
+          <span style="flex:none;max-width:46%;text-align:right;font-family:'JetBrains Mono',monospace;font-size:11px;color:#1c231d;font-weight:700;line-height:1.7">{{ d.a }}</span>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+
+  <!-- 10 NAVIGATION -->
+  <div style="margin-top:48px">
+    <div style="display:flex;align-items:baseline;gap:12px;border-bottom:1px solid #1c231d;padding-bottom:10px">
+      <span style="font-family:'JetBrains Mono',monospace;font-size:13px;color:#3f6b45;font-weight:700">10</span>
+      <h2 style="margin:0;font-size:22px;font-weight:900">导航 · Navigation</h2>
+      <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#9aa295">sidebar / bottom nav / headers / disclosure</span>
+    </div>
+
+    <div style="display:grid;grid-template-columns:240px 1fr;gap:16px;margin-top:22px">
+      <!-- sidebar sample -->
+      <div style="border:1px solid #d5dbcf;background:#fff;display:flex;flex-direction:column;min-height:420px">
+        <div style="background:#1c231d;padding:16px 16px 14px">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.22em;color:#8fb18a">POUR.LOG</div>
+          <div style="font-size:14px;font-weight:900;color:#e9ede6;margin-top:4px">手冲陪学</div>
+        </div>
+        <div style="display:flex;flex-direction:column;padding:10px 0">
+          <sc-for list="{{ navItems }}" as="n" hint-placeholder-count="4">
+            <a href="#" style="display:flex;align-items:center;gap:10px;height:44px;padding:0 16px;text-decoration:none;border-left:2px solid {{ n.edge }};background:{{ n.bg }}">
+              <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:{{ n.numColor }}">{{ n.num }}</span>
+              <span style="flex:1;font-size:13px;font-weight:{{ n.weight }};color:{{ n.fg }}">{{ n.zh }}</span>
+              <span style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.08em;color:{{ n.numColor }}">{{ n.en }}</span>
+            </a>
+          </sc-for>
+        </div>
+        <div style="margin-top:auto;border-top:1px solid #eef1ec;padding:12px 16px;display:flex;flex-direction:column;gap:8px">
+          <a href="#" style="display:flex;align-items:center;gap:8px;text-decoration:none;font-family:'JetBrains Mono',monospace;font-size:11px;color:#6f776d">⚙ 设置 · AI 接口</a>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.1em;color:#b7c1b1">LOCAL FIRST · 数据仅存本机</div>
+        </div>
+      </div>
+
+      <!-- rules -->
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <div style="border:1px solid #d5dbcf;background:#f6f8f3;padding:18px 20px">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;color:#9aa295">桌面侧栏 · SIDEBAR(≥800px 常驻)</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 28px;margin-top:12px;font-size:12px;color:#4a524a;line-height:2">
+            <div>· 宽 220px,≥1180px 放宽至 260px · 固定不滚动</div>
+            <div>· 结构:墨色品牌区 + 编号项 + 设置 + LOCAL FIRST</div>
+            <div>· active:左侧 2px 绿边 + 墨色粗体 + 卡片底</div>
+            <div>· hover:卡片底;focus:全局 focus ring</div>
+            <div>· 导航项高 44px · 编号与英文副标题用 mono muted</div>
+            <div>· 点击当前项 = 回到该列表顶部</div>
+          </div>
+        </div>
+        <div style="border:1px solid #d5dbcf;background:#f6f8f3;padding:18px 20px">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;color:#9aa295">移动底部导航 · BOTTOM NAV(<800px)</div>
+          <div style="display:flex;background:#fff;border:1px solid #d5dbcf;height:52px;margin-top:12px;max-width:420px">
+            <button style="flex:1;background:none;border:none;border-top:2px solid #3f6b45;cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.1em;color:#1c231d">BEANS</button>
+            <button style="flex:1;background:none;border:none;border-top:2px solid transparent;cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.1em;color:#9aa295">JOURNAL</button>
+            <button style="flex:1;background:none;border:none;border-top:2px solid transparent;cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.1em;color:#9aa295">RECIPES</button>
+            <button style="flex:1;background:none;border:none;border-top:2px solid transparent;cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.1em;color:#9aa295">LAB</button>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 28px;margin-top:12px;font-size:12px;color:#4a524a;line-height:2">
+            <div>· 高 56px + safe-area-inset-bottom · z-index 100</div>
+            <div>· 四项纯文字 mono,无图标(决策 07)</div>
+            <div>· active = 顶部 2px 绿边 + 墨色文字</div>
+            <div>· 表单页出现固定保存栏时,底部导航隐藏</div>
+          </div>
+        </div>
+        <div style="border:1px solid #d5dbcf;background:#f6f8f3;padding:18px 20px">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;color:#9aa295">DISCLOSURE · ACCORDION · STICKY</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 28px;margin-top:12px;font-size:12px;color:#4a524a;line-height:2">
+            <div>· 展开图标统一 ▸(收起)/ ▾(展开),置于标题左侧</div>
+            <div>· 标题区高 44px,整行可点,aria-expanded 必写</div>
+            <div>· 参数组 Accordion 单开;普通 Disclosure 可多开</div>
+            <div>· 展开内容底 panel-soft #fbfcfa + hairline 上边</div>
+            <div>· 展开动画 base 160ms,reduced-motion 瞬时</div>
+            <div>· sticky 元素 offset = 页头高 + 24px,z-index 200</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- header patterns -->
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:16px">
+      <div style="border:1px solid #d5dbcf;background:#f6f8f3">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.1em;color:#9aa295;padding:10px 14px 0">列表页 · MASTHEAD</div>
+        <div style="background:#1c231d;color:#e9ede6;padding:14px 16px;margin:10px 14px 14px">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.22em;color:#8fb18a">POUR.LOG / 手冲陪学</div>
+          <div style="display:flex;align-items:baseline;justify-content:space-between;margin-top:6px">
+            <span style="font-size:20px;font-weight:900">豆样本库</span>
+            <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#9aa295">n=12</span>
+          </div>
+        </div>
+      </div>
+      <div style="border:1px solid #d5dbcf;background:#f6f8f3">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.1em;color:#9aa295;padding:10px 14px 0">详情页 · TOP ACTIONS + HERO</div>
+        <div style="padding:10px 14px 14px">
+          <div style="display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;font-size:11px">
+            <a href="#" style="color:#6f776d;text-decoration:none">← BEANS</a>
+            <a href="#" style="color:#3f6b45;text-decoration:none">EDIT ▸</a>
+          </div>
+          <div style="font-size:22px;font-weight:900;margin-top:10px">耶加雪菲</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#9aa295;margin-top:3px">[01] 水洗 · 浅烘 · 06.28</div>
+        </div>
+      </div>
+      <div style="border:1px solid #d5dbcf;background:#f6f8f3">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.1em;color:#9aa295;padding:10px 14px 0">表单页 · BACK + TITLE</div>
+        <div style="padding:10px 14px 14px">
+          <a href="#" style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6f776d;text-decoration:none">← 取消</a>
+          <div style="font-size:22px;font-weight:900;margin-top:10px">新建冲煮日记</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#9aa295;margin-top:3px">STEP 1/2 · 配方参数</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#9aa295;margin-top:22px">机器可读 token 见 → design-tokens.json(v1.1.0,含 breakpoint / layout / size / motion / z-index / overlay / state / decisions)</div>
+  </div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  renderVals(){
+    const A='#3f6b45', HOT='#c15a3c';
+    return {
+      coreColors:[
+        {name:'强调绿 Accent', hex:'#3f6b45', token:'--accent', desc:'主按钮 · 进度 · 激活 · 数据条'},
+        {name:'强调浅 Accent-L', hex:'#8fb18a', token:'--accent-l', desc:'深底之上的品牌字'},
+        {name:'墨 Ink', hex:'#1c231d', token:'--ink', desc:'深底容器 · 主文字'},
+        {name:'墨前景 Ink-FG', hex:'#e9ede6', token:'--ink-fg', desc:'墨底之上的字'},
+        {name:'应用底 App-BG', hex:'#edf0ea', token:'--appbg', desc:'底层画布'},
+        {name:'卡片 Card', hex:'#f6f8f3', token:'--card', desc:'卡片 / 输入框底'},
+        {name:'描边 Border', hex:'#d5dbcf', token:'--border', desc:'卡片 / 分隔 / 网格'},
+        {name:'警示 Hot', hex:'#c15a3c', token:'--hot', desc:'过萃 / 删除 / 错误'},
+      ],
+      grays:[
+        {name:'强正文', hex:'#2a322a', token:'text.strong'},
+        {name:'正文', hex:'#4a524a', token:'text.body'},
+        {name:'次级', hex:'#6f776d', token:'text.secondary'},
+        {name:'元信息', hex:'#9aa295', token:'text.muted'},
+        {name:'禁用', hex:'#b7c1b1', token:'text.disabled'},
+      ],
+      typeScale:[
+        {meta:'30 / 900', css:'font-size:30px;font-weight:900', sample:'详情大标题', use:'display'},
+        {meta:'26 / 900', css:'font-size:26px;font-weight:900', sample:'页面标题', use:'h1'},
+        {meta:'20 / 700', css:'font-size:20px;font-weight:700', sample:'豆名 · 卡片主名', use:'title'},
+        {meta:'18 / 700', css:'font-size:18px;font-weight:700', sample:'区块小标题', use:'lead'},
+        {meta:'14 / 400', css:'font-size:14px', sample:'正文文字,行高 1.8 展开阅读。', use:'body'},
+        {meta:'mono 12', css:"font-family:'JetBrains Mono',monospace;font-size:12px", sample:'1:16 · 92°C · 2:30', use:'参数值'},
+        {meta:'mono 10 / .12em', css:"font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;color:#9aa295", sample:'SECTION LABEL', use:'小节标签'},
+      ],
+      specs:[
+        {k:'粉水比',v:'1:16'},{k:'研磨',v:'中细'},{k:'水温',v:'88°C'},
+        {k:'注水',v:'三段'},{k:'总时间',v:'2:15'},{k:'方式',v:'热冲'},
+      ],
+      dims:[
+        {name:'酸',value:4,pct:'75%',hot:A},
+        {name:'甜',value:4,pct:'75%',hot:A},
+        {name:'苦',value:4,pct:'75%',hot:HOT},
+        {name:'干净度',value:2,pct:'25%',hot:HOT},
+        {name:'余韵',value:4,pct:'75%',hot:A},
+        {name:'醇厚度',value:3,pct:'50%',hot:A},
+      ],
+      breakpoints:[
+        {name:'MOBILE', range:'< 800', rules:'单列 · 底部导航 · 固定操作栏 · 分步表单', nums:'边距 20 · 列数 1 · CTA 全宽 52h'},
+        {name:'TABLET', range:'≥ 800', rules:'左侧导航出现 · 内容扩宽 · 双列列表', nums:'边距 32 · 侧栏 220 · 列数 2'},
+        {name:'DESKTOP', range:'≥ 1080', rules:'详情双栏 · 右侧 sticky 面板 · 双栏表单', nums:'边距 40 · 内容上限 1080 · 列数 2'},
+        {name:'WIDE', range:'≥ 1180', rules:'宽侧栏 · 三列豆子卡片 · 更大页边距', nums:'边距 48 · 侧栏 260 · 列数 3'},
+      ],
+      layoutTokens:[
+        {k:'layout.content-max', v:'1080px'},
+        {k:'layout.form-max', v:'640px'},
+        {k:'layout.sidebar-width / -wide', v:'220 / 260px'},
+        {k:'layout.bottom-nav-height', v:'56px + safe-area'},
+        {k:'layout.sticky-action-height', v:'64px'},
+        {k:'layout.dialog-max-width', v:'480px'},
+        {k:'layout.result-panel-max-height', v:'60vh'},
+        {k:'layout.gutter', v:'14px (桌面 16px)'},
+      ],
+      btnMatrix:(()=>{
+        const base='cursor:pointer;';
+        const focus='outline:2px solid #3f6b45;outline-offset:2px;';
+        const mk=(name,en,def,hover,foc,pressed,disabled)=>({name,en,cells:[
+          {state:'DEFAULT',text:'保存',css:base+def},
+          {state:'HOVER',text:'保存',css:base+hover},
+          {state:'FOCUS',text:'保存',css:base+def+foc},
+          {state:'PRESSED',text:'保存',css:base+pressed},
+          {state:'DISABLED',text:'保存',css:'cursor:not-allowed;'+disabled},
+        ]});
+        return [
+          mk('主按钮','PRIMARY','background:#3f6b45;color:#fff','background:#35593a;color:#fff','background:#3f6b45;color:#fff','background:#2f5334;color:#fff','background:#b7c1b1;color:#fff'),
+          mk('墨色','DARK','background:#1c231d;color:#e9ede6','background:#2a322a;color:#e9ede6','background:#1c231d;color:#e9ede6','background:#000;color:#e9ede6','background:#d5dbcf;color:#9aa295'),
+          mk('实线次级','GHOST','border:1px solid #d5dbcf;color:#4a524a','border:1px solid #1c231d;color:#1c231d','border:1px solid #d5dbcf;color:#4a524a','border:1px solid #1c231d;color:#1c231d;background:#eef1ec','border:1px solid #e0e5db;color:#b7c1b1'),
+          mk('虚线新增','DASHED-ADD','border:1px dashed #b7c1b1;color:#6f776d','border:1px dashed #3f6b45;color:#3f6b45','border:1px dashed #b7c1b1;color:#6f776d','border:1px dashed #3f6b45;color:#3f6b45;background:#f0f4ee','border:1px dashed #e0e5db;color:#b7c1b1'),
+          {name:'危险入口',en:'DANGER',cells:[
+            {state:'DEFAULT',text:'删除',css:base+'border:1px solid #c15a3c;color:#c15a3c'},
+            {state:'HOVER',text:'删除',css:base+'border:1px solid #c15a3c;color:#c15a3c;background:#fbf3ee'},
+            {state:'FOCUS',text:'删除',css:base+'border:1px solid #c15a3c;color:#c15a3c;outline:2px solid #c15a3c;outline-offset:2px'},
+            {state:'PRESSED',text:'删除',css:base+'border:1px solid #a1502e;color:#a1502e;background:#fbf3ee'},
+            {state:'DISABLED',text:'删除',css:'cursor:not-allowed;border:1px solid #e0e5db;color:#b7c1b1'},
+          ]},
+          {name:'危险确认',en:'DANGER-SOLID',cells:[
+            {state:'DEFAULT',text:'确认删除',css:base+'background:#c15a3c;color:#fff'},
+            {state:'HOVER',text:'确认删除',css:base+'background:#a1502e;color:#fff'},
+            {state:'FOCUS',text:'确认删除',css:base+'background:#c15a3c;color:#fff;outline:2px solid #c15a3c;outline-offset:2px'},
+            {state:'PRESSED',text:'确认删除',css:base+'background:#8f4527;color:#fff'},
+            {state:'DISABLED',text:'确认删除',css:'cursor:not-allowed;background:#b7c1b1;color:#fff'},
+          ]},
+        ];
+      })(),
+      navItems:[
+        {num:'01',zh:'豆样本库',en:'BEANS',edge:'#3f6b45',bg:'#f6f8f3',fg:'#1c231d',weight:700,numColor:'#3f6b45'},
+        {num:'02',zh:'冲煮日记',en:'JOURNAL',edge:'transparent',bg:'transparent',fg:'#6f776d',weight:400,numColor:'#9aa295'},
+        {num:'03',zh:'配方库',en:'RECIPES',edge:'transparent',bg:'transparent',fg:'#6f776d',weight:400,numColor:'#9aa295'},
+        {num:'04',zh:'冲煮实验室',en:'LAB',edge:'transparent',bg:'transparent',fg:'#6f776d',weight:400,numColor:'#9aa295'},
+      ],
+      pillStates:[
+        {state:'IDLE',text:'冰冲',css:'border:1px solid #d5dbcf;color:#6f776d;cursor:pointer'},
+        {state:'HOVER',text:'冰冲',css:'border:1px solid #9aa295;color:#4a524a;cursor:pointer'},
+        {state:'SELECTED',text:'热冲',css:'border:1px solid #3f6b45;background:#3f6b45;color:#fff;cursor:pointer'},
+        {state:'FOCUS',text:'冰冲',css:'border:1px solid #d5dbcf;color:#6f776d;outline:2px solid #3f6b45;outline-offset:2px;cursor:pointer'},
+        {state:'DISABLED',text:'冷萃',css:'border:1px solid #e0e5db;color:#b7c1b1;cursor:not-allowed'},
+      ],
+      inputStates:[
+        {state:'DEFAULT',label:'粉量',req:'必填',reqColor:'#c15a3c',boxCss:'background:#f6f8f3;border:1px solid #d5dbcf',value:'15',valColor:'#1c231d',unit:'g',msg:'常用 12–20g',msgColor:'#9aa295'},
+        {state:'FOCUS',label:'水温',req:'必填',reqColor:'#c15a3c',boxCss:'background:#fff;border:1px solid #3f6b45;box-shadow:inset 0 0 0 1px #3f6b45',value:'88',valColor:'#1c231d',unit:'°C',msg:'',msgColor:'#9aa295'},
+        {state:'ERROR',label:'水温',req:'必填',reqColor:'#c15a3c',boxCss:'background:#fbf3ee;border:1px solid #c15a3c',value:'132',valColor:'#c15a3c',unit:'°C',msg:'✕ 超出范围,应在 70–100°C',msgColor:'#c15a3c'},
+        {state:'WARNING · 可保存',label:'研磨度',req:'选填',reqColor:'#9aa295',boxCss:'background:#f6f8f3;border:1px solid #d5dbcf',value:'极细',valColor:'#1c231d',unit:'',msg:'⚠ 手冲少用极细,易过萃',msgColor:'#a1502e'},
+        {state:'DISABLED',label:'水温',req:'冷萃',reqColor:'#9aa295',boxCss:'background:#eef1ec;border:1px solid #e0e5db',value:'—',valColor:'#b7c1b1',unit:'°C',msg:'冷萃无需水温',msgColor:'#9aa295'},
+        {state:'READ-ONLY · 派生',label:'粉水比',req:'自动',reqColor:'#9aa295',boxCss:'background:#fbfcfa;border:1px dashed #d5dbcf',value:'1:16',valColor:'#3f6b45',unit:'计算值',msg:'由粉量与总水量派生,不可编辑',msgColor:'#9aa295'},
+      ],
+      banners:[
+        {kind:'ERROR',icon:'✕',title:'保存失败',titleColor:'#c15a3c',border:'#c15a3c',bg:'#fbf3ee',body:'操作无法继续。红字+红描边,必须给出下一步(重试/返回)。'},
+        {kind:'WARNING',icon:'⚠',title:'数据待确认',titleColor:'#a1502e',border:'#d99a82',bg:'#fbf3ee',body:'有风险但允许继续。红系浅化,正文保持中性,不阻断操作。'},
+        {kind:'SUCCESS',icon:'✓',title:'已保存',titleColor:'#3f6b45',border:'#3f6b45',bg:'#f0f4ee',body:'操作成功。绿字+绿描边;瞬时反馈优先用 toast,不占版面。'},
+        {kind:'INFO',icon:'//',title:'本地优先',titleColor:'#4a524a',border:'#d5dbcf',bg:'#f6f8f3',body:'普通说明。中性灰,不与状态色竞争。'},
+      ],
+      decisions:[
+        {n:'01',q:'桌面端是否常驻左侧导航?',a:'是 · ≥800px 常驻'},
+        {n:'02',q:'断点是否保留 800 / 1080 / 1180?',a:'保留'},
+        {n:'03',q:'卡片 hover 是否上移 + 阴影?',a:'否 · 仅描边变墨色'},
+        {n:'04',q:'Ghost 按钮实线还是虚线?',a:'实线'},
+        {n:'05',q:'虚线是否仅用于新增/录入?',a:'是 · dashed-add 专用'},
+        {n:'06',q:'圆形例外范围?',a:'仅 slider thumb + info 按钮'},
+        {n:'07',q:'底部导航保留四项纯文字?',a:'是 · mono 无图标'},
+        {n:'08',q:'详情/AI 面板桌面是否 sticky?',a:'是 · offset 24px'},
+        {n:'09',q:'冲煮表单结构?',a:'手机两步 · 桌面双栏同页'},
+        {n:'10',q:'Dialog 点遮罩是否关闭?',a:'普通可 · 危险确认不可 · Esc 均=取消'},
+        {n:'11',q:'Toast 是否正式加入?',a:'是 · 2.4s 单条替换'},
+        {n:'12',q:'操作文案继续中英混排?',a:'是 · CTA 保留大写英文'},
+        {n:'13',q:'是否改用图标库?',a:'否 · 字符图标 + 统一映射表'},
+        {n:'14',q:'桌面大标题是否放大?',a:'允许 · 上限 34px'},
+        {n:'15',q:'数值下降是否可用红色?',a:'否 · 红=诊断/危险 · 下降用灰+箭头'},
+      ],
+      principles:[
+        {n:'01', title:'等宽字管一切数据', body:'参数、评分、meta、标签统统用 JetBrains Mono；黑体只留给标题与人写的正文。数字是这个 App 的主角。'},
+        {n:'02', title:'直角,不用圆角', body:'卡片、按钮、网格全部直角 1px 描边。克制、精密、有实验记录本的质感。'},
+        {n:'03', title:'单一强调绿', body:'#3f6b45 是唯一主动作色,配深墨底做层级;只有过萃/异常/删除才动用警示红。'},
+        {n:'04', title:'色随语义变', body:'数据条平时是绿,当苦≥4 或干净度≤2 触发过萃阈值时转红——颜色即诊断。'},
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

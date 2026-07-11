@@ -1,0 +1,185 @@
+{
+  "$meta": {
+    "name": "手冲陪学 · POUR.LOG Design System",
+    "version": "1.1.0",
+    "theme": "森林绿 (Forest Green)",
+    "source": "手冲陪学.dc.html",
+    "description": "实验室 / 极客数据化风格。等宽字体做元信息与数据、黑体做标题正文;直角描边、单一强调绿、克制的红作警示。",
+    "changelog": [
+      "1.1.0 — 增补 breakpoint/layout/size/motion/z-index/overlay/state;拆分 button-ghost(实线) 与 button-dashed-add(虚线);新增 15 项设计决策记录",
+      "1.0.0 — 初版:色彩/字体/边框/间距/核心组件"
+    ]
+  },
+  "color": {
+    "accent":      { "value": "#3f6b45", "desc": "主强调色 · 森林绿 · 主按钮/进度/激活态/数据条" },
+    "accent-light":{ "value": "#8fb18a", "desc": "强调色浅调 · 深底上的品牌字/次级强调" },
+    "ink":         { "value": "#1c231d", "desc": "墨色 · 深底容器/主文字/次级按钮底" },
+    "ink-fg":      { "value": "#e9ede6", "desc": "墨底之上的前景字" },
+    "app-bg":      { "value": "#edf0ea", "desc": "应用背景 · 底层画布" },
+    "card":        { "value": "#f6f8f3", "desc": "卡片/输入框背景" },
+    "border":      { "value": "#d5dbcf", "desc": "描边 · 卡片/分隔/网格线" },
+    "hot":         { "value": "#c15a3c", "desc": "警示 · 过萃/删除/错误/异常数值 · 不用于表达普通数值下降" },
+    "text": {
+      "strong":    { "value": "#2a322a", "desc": "强正文" },
+      "body":      { "value": "#4a524a", "desc": "正文" },
+      "secondary": { "value": "#6f776d", "desc": "次级文字/说明" },
+      "muted":     { "value": "#9aa295", "desc": "元信息/占位/最弱等宽字" },
+      "disabled":  { "value": "#b7c1b1", "desc": "禁用/虚线描边" }
+    },
+    "surface": {
+      "track":      { "value": "#e0e5db", "desc": "进度/数据条底槽" },
+      "divider":    { "value": "#eef1ec", "desc": "步骤行细分隔" },
+      "panel-soft": { "value": "#fbfcfa", "desc": "展开面板浅底" },
+      "warn-soft":  { "value": "#fbf3ee", "desc": "警示浅底 · error/warning 区块底" },
+      "success-soft":{ "value": "#f0f4ee", "desc": "成功浅底" }
+    }
+  },
+  "font": {
+    "family": {
+      "sans": { "value": "'Noto Sans SC', system-ui, sans-serif", "desc": "标题/正文" },
+      "mono": { "value": "'JetBrains Mono', monospace", "desc": "元信息/数据/参数/标签" }
+    },
+    "weight": { "light": 300, "regular": 400, "medium": 500, "bold": 700, "black": 900 },
+    "size": {
+      "display": { "value": "30px", "weight": 900, "desc": "详情页大标题 · 桌面可放大至 34px(上限)" },
+      "h1":      { "value": "26px", "weight": 900, "desc": "页面标题" },
+      "h2":      { "value": "24px", "weight": 900, "desc": "表单标题" },
+      "title":   { "value": "20px", "weight": 700, "desc": "卡片主名(豆名)" },
+      "lead":    { "value": "18px", "weight": 700, "desc": "区块小标题" },
+      "body":    { "value": "14px", "weight": 400, "desc": "正文" },
+      "body-sm": { "value": "13px", "weight": 400, "desc": "小正文" },
+      "mono-md": { "value": "12px", "weight": 400, "desc": "参数值/按钮/说明" },
+      "mono-sm": { "value": "11px", "weight": 400, "desc": "meta 行" },
+      "mono-xs": { "value": "10px", "weight": 400, "desc": "小节标签" },
+      "mono-2xs":{ "value": "9px",  "weight": 400, "desc": "网格字段名/徽标" }
+    },
+    "letter-spacing": {
+      "brand": { "value": "0.22em", "desc": "品牌 mono 标识" },
+      "label": { "value": "0.12em", "desc": "小节 mono 标签" },
+      "cta":   { "value": "0.12em", "desc": "主按钮" },
+      "meta":  { "value": "0.05em", "desc": "元信息" }
+    }
+  },
+  "breakpoint": {
+    "mobile":  { "value": "0–799px",  "desc": "单列 · 底部导航 · 固定操作栏 · 分步表单" },
+    "tablet":  { "value": ">=800px",  "desc": "左侧导航出现 · 内容扩宽 · 双列列表" },
+    "desktop": { "value": ">=1080px", "desc": "详情双栏 · 右侧 sticky 面板 · 双栏表单" },
+    "wide":    { "value": ">=1180px", "desc": "宽侧栏 · 三列卡片 · 更大页边距" }
+  },
+  "layout": {
+    "content-max":        { "value": "1080px", "desc": "主内容最大宽度" },
+    "form-max":           { "value": "640px",  "desc": "表单最大宽度(单栏)" },
+    "sidebar-width":      { "value": "220px",  "desc": "桌面侧栏 · >=800px" },
+    "sidebar-width-wide": { "value": "260px",  "desc": "宽桌面侧栏 · >=1180px" },
+    "bottom-nav-height":  { "value": "56px",   "desc": "移动底部导航(另加 safe-area-inset-bottom)" },
+    "sticky-action-height":{ "value": "64px",  "desc": "固定保存/下一步操作栏" },
+    "dialog-max-width":   { "value": "480px",  "desc": "Dialog 最大宽度 · 移动端左右留 20px" },
+    "result-panel-max-height": { "value": "60vh", "desc": "移动端底部结果面板最大高度" },
+    "screen-x":           { "value": "20 / 32 / 40 / 48px", "desc": "页面左右边距 · 按断点递增" },
+    "gutter":             { "value": "14px",   "desc": "卡片网格列间距(桌面 16px)" },
+    "columns":            { "value": "1 / 2 / 2 / 3", "desc": "豆子卡片列数 · 按断点" }
+  },
+  "size": {
+    "control-h":     { "value": "48px", "desc": "标准按钮/控件高度" },
+    "control-h-compact": { "value": "36px", "desc": "紧凑行内操作" },
+    "cta-h-mobile":  { "value": "52px", "desc": "移动端全宽 CTA" },
+    "input-h":       { "value": "46px", "desc": "输入框高度" },
+    "icon-btn":      { "value": "40px", "desc": "图标按钮视觉尺寸(命中区 44px)" },
+    "touch-min":     { "value": "44px", "desc": "最小触控命中区 · 硬约束" },
+    "nav-item-h":    { "value": "44px", "desc": "侧栏导航项高度" },
+    "slider-thumb":  { "value": "20px", "desc": "滑杆 thumb 视觉直径(命中区 44px) · 圆形例外①" }
+  },
+  "motion": {
+    "fast":   { "value": "120ms", "desc": "hover/press 等即时状态" },
+    "base":   { "value": "160ms", "desc": "普通过渡 · 展开/选中" },
+    "panel":  { "value": "220ms", "desc": "面板/sheet/dialog 进出" },
+    "ease":   { "value": "cubic-bezier(0.2, 0, 0, 1)", "desc": "标准 easing" },
+    "animatable": { "value": "opacity, transform, background-color, border-color", "desc": "仅允许动画这些属性" },
+    "reduced":{ "value": "0ms", "desc": "prefers-reduced-motion: 全部过渡归零,状态瞬时切换" }
+  },
+  "z-index": {
+    "nav":     { "value": 100,  "desc": "底部导航/侧栏" },
+    "sticky":  { "value": 200,  "desc": "sticky 操作栏/结果摘要" },
+    "overlay": { "value": 900,  "desc": "遮罩 scrim" },
+    "dialog":  { "value": 1000, "desc": "Dialog/Bottom Sheet/Toast" }
+  },
+  "overlay": {
+    "scrim": { "value": "rgba(28,35,29,0.5)", "desc": "Dialog/Sheet 遮罩" }
+  },
+  "state": {
+    "focus-ring":     { "value": "2px solid #3f6b45, offset 2px", "desc": "全局 focus-visible · 危险控件用 #c15a3c" },
+    "hover-primary":  { "value": "#35593a", "desc": "Primary hover 底色" },
+    "pressed-primary":{ "value": "#2f5334", "desc": "Primary pressed 底色" },
+    "hover-ink":      { "value": "#2a322a", "desc": "Dark hover 底色" },
+    "disabled-bg":    { "value": "#b7c1b1", "desc": "实心按钮禁用底" },
+    "disabled-fg":    { "value": "#9aa295", "desc": "禁用文字" },
+    "card-hover":     { "value": "border-color → #1c231d", "desc": "卡片 hover 只加深描边 · 不上移不加阴影" }
+  },
+  "radius": {
+    "none": { "value": "0px", "desc": "全局直角 · 核心特征" },
+    "circle-exceptions": { "value": "slider thumb / 评分说明 info 按钮", "desc": "仅有的两个圆形例外 · 均为功能性控制点" }
+  },
+  "border": {
+    "hairline": { "value": "1px solid #d5dbcf", "desc": "标准描边" },
+    "strong":   { "value": "1px solid #1c231d", "desc": "强描边(规格网格外框)" },
+    "dashed":   { "value": "1px dashed #b7c1b1", "desc": "仅用于「新增/录入」语义 · 不作普通装饰" },
+    "active-top":{ "value": "2px solid #3f6b45", "desc": "底部导航激活指示" }
+  },
+  "space": {
+    "screen-x":   { "value": "20px", "desc": "移动端屏幕左右内边距(桌面见 layout.screen-x)" },
+    "card-pad":   { "value": "14px 15px", "desc": "卡片内边距" },
+    "gap-tight":  { "value": "6px" },
+    "gap":        { "value": "8px" },
+    "gap-md":     { "value": "12px" },
+    "section":    { "value": "20px", "desc": "区块间距" }
+  },
+  "shadow": {
+    "phone": { "value": "0 30px 70px -20px rgba(28,35,29,.5), 0 8px 24px rgba(28,35,29,.18)", "desc": "设备阴影(展示用)" },
+    "toast": { "value": "0 8px 24px rgba(28,35,29,.3)", "desc": "toast 浮层 · 产品内唯一投影" }
+  },
+  "component": {
+    "button-primary": { "bg": "#3f6b45", "fg": "#ffffff", "font": "mono", "h": "48px", "tracking": "0.12em", "radius": "0", "hover": "#35593a", "pressed": "#2f5334", "disabled-bg": "#b7c1b1", "loading": "保留原宽 · 文案替换为 mono 进行时文案 · 无 spinner" },
+    "button-dark":    { "bg": "#1c231d", "fg": "#e9ede6", "font": "mono", "h": "48px", "radius": "0", "hover": "#2a322a" },
+    "button-ghost":   { "border": "1px solid #d5dbcf", "fg": "#4a524a", "bg": "transparent", "font": "mono", "radius": "0", "hover": "border #1c231d · fg #1c231d", "desc": "实线次级按钮 · 与 dashed-add 职责分离" },
+    "button-dashed-add": { "border": "1px dashed #b7c1b1", "fg": "#6f776d", "bg": "transparent", "font": "mono", "radius": "0", "hover": "border/fg → #3f6b45", "desc": "仅用于新增/录入操作" },
+    "button-danger":  { "border": "1px solid #c15a3c", "fg": "#c15a3c", "bg": "transparent", "desc": "危险入口(如删除)" },
+    "button-danger-solid": { "bg": "#c15a3c", "fg": "#ffffff", "desc": "危险最终确认 · 仅出现在 Dialog 内" },
+    "pill-outline":   { "sel-border": "#3f6b45", "sel-bg": "#f6f8f3", "sel-fg": "#3f6b45", "idle-border": "#d5dbcf", "idle-fg": "#6f776d" },
+    "pill-solid":     { "sel-bg": "#3f6b45", "sel-fg": "#ffffff", "idle-border": "#d5dbcf", "idle-fg": "#6f776d" },
+    "tag":            { "border": "1px solid #d5dbcf", "fg": "#3f6b45", "font": "mono", "pad": "2px 8px", "clickable": false },
+    "badge-best":     { "bg": "#3f6b45", "fg": "#ffffff", "font": "mono", "pad": "2px 6px" },
+    "card":           { "bg": "#f6f8f3", "border": "1px solid #d5dbcf", "radius": "0", "hover": "border-color #1c231d" },
+    "input":          { "bg": "#f6f8f3", "border": "1px solid #d5dbcf", "h": "46px", "focus": "border #3f6b45 + 1px 内描边", "error": "border #c15a3c", "unit": "框内右侧 mono muted" },
+    "spec-grid":      { "outer": "1px solid #1c231d", "inner": "1px solid #d5dbcf", "columns": 3 },
+    "data-bar":       { "track": "#e0e5db", "fill": "#3f6b45", "hot": "#c15a3c", "height": "6–8px" },
+    "toast":          { "bg": "#1c231d", "fg": "#e9ede6", "font": "mono", "max-width": "360px", "duration": "2400ms", "position": "mobile 底部居中(导航上方 12px) / 桌面右下 24px", "stack": "单条替换 · 不堆叠", "close": "无关闭按钮", "aria": "aria-live=polite" },
+    "dialog":         { "max-width": "480px", "scrim": "rgba(28,35,29,0.5)", "scrim-click": "普通确认可关闭 · 危险确认不可 · Esc 均可关闭(视为取消)", "focus": "初始焦点给次要(取消)按钮 · 关闭后焦点还原触发元素" }
+  },
+  "dimensions": {
+    "$desc": "六维口感评分 1–5,越高越强",
+    "acid":   { "label": "酸",     "lo": "几乎无酸",  "hi": "尖锐刺激" },
+    "sweet":  { "label": "甜",     "lo": "寡淡",      "hi": "蜜感明显" },
+    "bitter": { "label": "苦",     "lo": "无苦",      "hi": "苦到发涩", "hot-when": ">=4" },
+    "clean":  { "label": "干净度", "lo": "浑浊/杂味", "hi": "通透无杂", "hot-when": "<=2" },
+    "finish": { "label": "余韵",   "lo": "一喝就没",  "hi": "悠长回甘" },
+    "body":   { "label": "醇厚度", "lo": "水感稀薄",  "hi": "饱满挂杯" }
+  },
+  "decisions": {
+    "$desc": "任务书 §18 开放项 · 正式决议见 设计系统.dc.html §09",
+    "01-desktop-sidebar": "采用 · >=800px 常驻左侧导航",
+    "02-breakpoints": "保留 800 / 1080 / 1180",
+    "03-card-hover": "不上移不加阴影 · 仅描边变墨色",
+    "04-ghost-border": "Ghost = 实线",
+    "05-dashed": "虚线仅用于新增/录入",
+    "06-circle-exceptions": "slider thumb 与 info 按钮为仅有圆形例外",
+    "07-bottom-nav": "保留四项 · 纯文字 mono · 无图标",
+    "08-sticky": "详情页侧栏/AI 面板桌面 sticky · offset 24px",
+    "09-brew-form": "手机两步流程 · 桌面同页双栏",
+    "10-dialog-scrim": "普通确认点遮罩可关 · 危险确认不可 · Esc 均等于取消",
+    "11-toast": "正式加入 · 行为见 component.toast",
+    "12-copy": "保留中英混排 · CTA 保留全大写英文",
+    "13-icons": "继续字符图标 · 统一映射表 · 不引图标库",
+    "14-desktop-display": "桌面大标题上限 34px",
+    "15-red-semantics": "红色只表诊断/危险 · 数值下降用中性灰+箭头"
+  }
+}
