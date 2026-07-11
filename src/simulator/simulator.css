@@ -272,6 +272,13 @@
   color: #fff !important;
   font-weight: 700;
 }
+.sim-segment button:disabled {
+  border-color: var(--border) !important;
+  background: var(--surface-track) !important;
+  color: var(--text-muted) !important;
+  cursor: not-allowed;
+  font-weight: 400;
+}
 .sim-control-group input[type="range"] {
   appearance: none;
   width: 100%;

@@ -102,6 +102,7 @@ interface ConfirmRequest {
   message: ReactNode;
   confirmLabel?: string;
   danger?: boolean;
+  returnFocus?: HTMLElement | null;
   resolve: (confirmed: boolean) => void;
 }
 
@@ -110,22 +111,49 @@ function AppDialog({
   children,
   onClose,
   actions,
+  dismissOnBackdrop = true,
+  returnFocusTo,
 }: {
   title: string;
   children: ReactNode;
   onClose: () => void;
   actions: ReactNode;
+  dismissOnBackdrop?: boolean;
+  returnFocusTo?: HTMLElement | null;
 }) {
+  const onCloseRef = useRef(onClose);
+  const restoreFocusRef = useRef<HTMLElement | null>(null);
+
   useEffect(() => {
-    function closeOnEscape(event: KeyboardEvent) {
-      if (event.key === "Escape") onClose();
-    }
-    document.addEventListener("keydown", closeOnEscape);
-    return () => document.removeEventListener("keydown", closeOnEscape);
+    onCloseRef.current = onClose;
   }, [onClose]);
 
+  useEffect(() => {
+    restoreFocusRef.current =
+      returnFocusTo ??
+      (document.activeElement instanceof HTMLElement
+        ? document.activeElement
+        : null);
+
+    function closeOnEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") onCloseRef.current();
+    }
+    document.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.removeEventListener("keydown", closeOnEscape);
+      restoreFocusRef.current?.focus();
+    };
+  }, []);
+
   return (
-    <div className="dialog-backdrop" role="presentation" onMouseDown={onClose}>
+    <div
+      className="dialog-backdrop"
+      role="presentation"
+      onMouseDown={(event) => {
+        if (dismissOnBackdrop && event.target === event.currentTarget)
+          onClose();
+      }}
+    >
       <section
         className="app-dialog"
         role="dialog"
@@ -157,7 +185,14 @@ function useConfirmDialog() {
 
   function ask(options: Omit<ConfirmRequest, "resolve">) {
     return new Promise<boolean>((resolve) =>
-      setRequest({ ...options, resolve }),
+      setRequest({
+        ...options,
+        returnFocus:
+          document.activeElement instanceof HTMLElement
+            ? document.activeElement
+            : null,
+        resolve,
+      }),
     );
   }
 
@@ -172,11 +207,14 @@ function useConfirmDialog() {
       <AppDialog
         title={request.title}
         onClose={() => finish(false)}
+        dismissOnBackdrop={!request.danger}
+        returnFocusTo={request.returnFocus}
         actions={
           <>
             <button
               type="button"
               className="ghost"
+              autoFocus
               onClick={() => finish(false)}
             >
               取消
