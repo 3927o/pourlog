@@ -1,14 +1,14 @@
-/* POUR.LOG · 手冲陪学 — design tokens (generated from design-tokens.json) */
+/* POUR.LOG · 手冲陪学 — shared design tokens */
 :root {
   /* color */
-  --accent: #3f6b45;        /* 主强调 · 森林绿 */
-  --accent-l: #8fb18a;      /* 深底上的品牌字 */
-  --ink: #1c231d;           /* 深底容器 / 主文字 */
-  --ink-fg: #e9ede6;        /* 墨底之上的字 */
-  --app-bg: #edf0ea;        /* 底层画布 */
-  --card: #f6f8f3;          /* 卡片 / 输入框底 */
-  --border: #d5dbcf;        /* 描边 / 分隔 / 网格 */
-  --hot: #c15a3c;           /* 过萃 / 删除 / 错误 */
+  --accent: #3f6b45; /* 主强调 · 森林绿 */
+  --accent-l: #8fb18a; /* 深底上的品牌字 */
+  --ink: #1c231d; /* 深底容器 / 主文字 */
+  --ink-fg: #e9ede6; /* 墨底之上的字 */
+  --app-bg: #edf0ea; /* 底层画布 */
+  --card: #f6f8f3; /* 卡片 / 输入框底 */
+  --border: #d5dbcf; /* 描边 / 分隔 / 网格 */
+  --hot: #c15a3c; /* 过萃 / 删除 / 错误 */
 
   /* text grays */
   --text-strong: #2a322a;
@@ -24,8 +24,8 @@
   --surface-warn-soft: #fbf3ee;
 
   /* font */
-  --font-sans: 'Noto Sans SC', system-ui, sans-serif;
-  --font-mono: 'JetBrains Mono', monospace;
+  --font-sans: "Noto Sans SC", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
 
   /* letter-spacing */
   --ls-brand: 0.22em;
@@ -51,6 +51,7 @@
   --space-section: 20px;
 
   /* shadow */
-  --shadow-phone: 0 30px 70px -20px rgba(28, 35, 29, .5), 0 8px 24px rgba(28, 35, 29, .18);
-  --shadow-toast: 0 8px 24px rgba(28, 35, 29, .3);
+  --shadow-phone:
+    0 30px 70px -20px rgba(28, 35, 29, 0.5), 0 8px 24px rgba(28, 35, 29, 0.18);
+  --shadow-toast: 0 8px 24px rgba(28, 35, 29, 0.3);
 }

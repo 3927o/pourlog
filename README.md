@@ -1,23 +1,27 @@
 # POUR.LOG · 手冲陪学
 
-手冲咖啡陪学 App。用实验记录本的方式记录豆子、冲煮参数与六维口感评分，帮你把每一杯冲得比上一杯更明白。
+本地优先的手冲咖啡陪学 PWA。记录豆子、配方、冲煮日记与六维口感，让 AI 或本地规则遵循“单变量原则”给出下一杯建议。
 
-设计源：[Claude Design · 手冲陪学 App PRD](https://claude.ai/design/p/fc591d96-ffe5-45e5-a54d-233e5bce3a52)
+## 功能
 
-## 设计系统
+- 豆样本库：豆子档案、风味标签、历史记录与最佳配方
+- 配方库：预置/自建配方、基础参数和分步注水
+- 冲煮日记：六维口感评分、笔记、配方快照
+- AI 推荐：根据豆子特性生成热冲、冰冲或冷萃配方
+- AI 复盘：根据口感评分只调整一个关键变量
+- 本地降级：未配置 AI 或接口不可用时仍可使用确定性规则
+- 本地数据：Dexie + IndexedDB，不需要账号或云端数据库
 
-主题：**森林绿 · Forest Green** — 实验室 / 极客数据化风格。
+## 技术栈
 
-- 等宽字体（JetBrains Mono）管一切数据：参数、评分、meta、标签
-- 黑体（Noto Sans SC）只留给标题与人写的正文
-- 全局直角、1px 描边，不用圆角
-- 单一强调绿 `#3f6b45`；只有过萃/异常/删除才动用警示红 `#c15a3c`
-- 色随语义变：苦≥4 或干净度≤2 时数据条转红——颜色即诊断
+React 19、TypeScript、Vite、React Router、Dexie、Zod、vite-plugin-pwa，以及 CSS Design Tokens。
 
-## 文件
+AI 使用 OpenAI-compatible `/chat/completions` 接口。用户可在设置页配置 Base URL、API Key 和 Model。
 
-| 文件 | 说明 |
-| --- | --- |
-| [index.html](index.html) | 设计系统参考页（色彩 / 字体 / 组件 / 原则），直接用浏览器打开 |
-| [tokens.css](tokens.css) | 设计 token 的 CSS 变量实现，供后续页面复用 |
-| [design-tokens.json](design-tokens.json) | 机器可读的设计 token 源文件 |
+## 开发
+
+```bash
+npm install
+npm run dev
+npm run build
+```
