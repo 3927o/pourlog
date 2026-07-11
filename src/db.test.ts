@@ -9,6 +9,7 @@ import {
   nextBeanNumber,
   seedDatabase,
 } from "./db";
+import { recipeToBrewDimensions } from "./simulator/experiment";
 
 describe("database initialization", () => {
   beforeEach(async () => {
@@ -31,6 +32,18 @@ describe("database initialization", () => {
     await seedDatabase();
 
     expect(await db.journals.count()).toBe(0);
+  });
+
+  it("aligns seeded journal dimensions with the simulator", async () => {
+    await seedDatabase();
+    for (const id of ["j1", "j2", "j3", "j4"]) {
+      const journal = await db.journals.get(id);
+      const bean = await db.beans.get(journal!.beanId);
+
+      expect(journal!.dims).toEqual(
+        recipeToBrewDimensions(bean!, journal!.recipeSnapshot),
+      );
+    }
   });
 
   it("marks an existing database without adding demo records", async () => {

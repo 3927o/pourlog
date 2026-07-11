@@ -556,6 +556,57 @@ button:disabled {
 .analysis p {
   line-height: 1.8;
 }
+.analysis-impact {
+  margin-top: 14px;
+  padding: 12px;
+  background: var(--app-bg);
+  border-left: 2px solid var(--accent);
+}
+.analysis-impact > small {
+  display: block;
+  color: var(--text-muted);
+  font: 9px var(--font-mono);
+  letter-spacing: 0.06em;
+}
+.experiment-impact-preview {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 7px;
+  margin-top: 9px;
+}
+.experiment-impact-preview > div {
+  min-width: 0;
+  border: 1px solid var(--border);
+  background: var(--card);
+  padding: 7px;
+  font-family: var(--font-mono);
+}
+.experiment-impact-preview span,
+.experiment-impact-preview small {
+  display: block;
+  color: var(--text-muted);
+  font-size: 9px;
+}
+.experiment-impact-preview b {
+  display: block;
+  margin: 3px 0;
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+.experiment-impact-preview .up b {
+  color: var(--accent);
+}
+.experiment-impact-preview .down b {
+  color: var(--hot);
+}
+.analysis-model-limit {
+  margin-top: 14px;
+  padding: 10px 12px;
+  border-left: 2px solid var(--hot);
+  background: var(--app-bg);
+  color: var(--text-secondary);
+  font: 10px/1.7 var(--font-mono);
+}
 .analysis em {
   display: block;
   color: var(--accent);

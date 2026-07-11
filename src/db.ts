@@ -10,6 +10,7 @@ import type {
   SavedRecipe,
 } from "./models";
 import { cloneRecipeContent } from "./models";
+import { recipeToBrewDimensions } from "./simulator/experiment";
 
 interface MetaRecord {
   id: "seeded";
@@ -192,6 +193,34 @@ class PourlogDB extends Dexie {
         meta: "id",
       })
       .upgrade(async (transaction) => migrateVersion4(transaction));
+    this.version(5)
+      .stores({
+        beans: "id, no, name, bestJournalId",
+        recipes: "id, method, updatedAt",
+        journals: "id, beanId, createdAt, savedAsRecipeId",
+        aiSuggestions:
+          "id, beanId, [beanId+method], generatedAt, savedRecipeId",
+        settings: "id",
+        meta: "id",
+      })
+      .upgrade(async (transaction) =>
+        alignExampleJournalDimensions(transaction),
+      );
+  }
+}
+
+async function alignExampleJournalDimensions(transaction: Transaction) {
+  const journalsTable = transaction.table("journals");
+  const beansTable = transaction.table("beans");
+  for (const id of ["j1", "j2", "j3", "j4"]) {
+    const journal = (await journalsTable.get(id)) as Journal | undefined;
+    if (!journal) continue;
+    const bean = (await beansTable.get(journal.beanId)) as Bean | undefined;
+    if (!bean?.name.startsWith("示例 ")) continue;
+    await journalsTable.update(id, {
+      dims: recipeToBrewDimensions(bean, journal.recipeSnapshot),
+      aiReview: undefined,
+    });
   }
 }
 
@@ -430,7 +459,7 @@ export async function seedDatabase() {
           beanId: "yr",
           recipeSnapshot: snapshot(recipes[3]!),
           createdAt: now - 6 * 86400000,
-          dims: { acid: 4, sweet: 4, bitter: 2, clean: 5, finish: 4, body: 3 },
+          dims: recipeToBrewDimensions(beans[0]!, recipes[3]!),
           notes: "花香很清楚，尾段回甘明显。",
         },
         {
@@ -438,7 +467,7 @@ export async function seedDatabase() {
           beanId: "yr",
           recipeSnapshot: snapshot(recipes[0]!),
           createdAt: now - 10 * 86400000,
-          dims: { acid: 5, sweet: 3, bitter: 2, clean: 4, finish: 3, body: 3 },
+          dims: recipeToBrewDimensions(beans[0]!, recipes[0]!),
           notes: "酸偏尖，可以再柔和些。",
         },
         {
@@ -446,7 +475,7 @@ export async function seedDatabase() {
           beanId: "hl",
           recipeSnapshot: snapshot(recipes[0]!),
           createdAt: now - 11 * 86400000,
-          dims: { acid: 3, sweet: 4, bitter: 3, clean: 4, finish: 3, body: 4 },
+          dims: recipeToBrewDimensions(beans[1]!, recipes[0]!),
           notes: "",
         },
         {
@@ -454,7 +483,7 @@ export async function seedDatabase() {
           beanId: "gs",
           recipeSnapshot: snapshot(recipes[1]!),
           createdAt: now - 5 * 86400000,
-          dims: { acid: 4, sweet: 5, bitter: 1, clean: 4, finish: 5, body: 3 },
+          dims: recipeToBrewDimensions(beans[2]!, recipes[1]!),
           notes: "花果香炸裂。",
         },
       ];

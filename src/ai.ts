@@ -77,7 +77,7 @@ export async function analyzeCup(
     {
       role: "system",
       content:
-        "你是一位专业手冲咖啡师和萃取教练。基于用户记录的六维口感，遵循“单变量原则”，只建议调整一个最关键的变量。使用简体中文，务实、克制。",
+        "你是一位专业手冲咖啡师和萃取教练。基于用户记录的六维口感，遵循“单变量原则”，只建议调整一个最关键的变量。reason只解释调整变量的萃取机制和要验证的假设，不要承诺甜、酸、苦等口感一定上升或下降，具体影响将由实验室模型另行计算。使用简体中文，务实、克制。",
     },
     {
       role: "user",
@@ -118,7 +118,7 @@ export function localAnalysis(recipe: RecipeContent, d: BrewDimensions) {
       variable: "水温",
       from: formatTemperature(recipe.temperatureC),
       to: `${temperature - 4}°C`,
-      reason: `苦味 ${d.bitter}、干净度 ${d.clean}，降低水温可减少过度萃取带来的苦味与杂味。`,
+      reason: `苦味 ${d.bitter}、干净度 ${d.clean}，降低水温会放慢萃取；用下一杯验证高萃取是否是主要原因。`,
       principle: "一次只动这一个变量，才能确认因果。",
       advanced: ["研磨可略粗半格", "第三段注水提早 5 秒收尾"],
       source: "local" as const,
@@ -128,7 +128,7 @@ export function localAnalysis(recipe: RecipeContent, d: BrewDimensions) {
       variable: "研磨",
       from: recipe.grind,
       to: `${recipe.grind}（略细）`,
-      reason: `酸度 ${d.acid} 偏尖，略细研磨提高萃取，有助于拉出甜感。`,
+      reason: `酸度 ${d.acid} 偏尖，略细研磨会提高萃取；用下一杯验证当前是否存在萃取不足。`,
       principle: "先只动研磨，水温与粉水比保持不变。",
       advanced: ["闷蒸延长 5 秒", "稳定注水速度"],
       source: "local" as const,
@@ -138,7 +138,7 @@ export function localAnalysis(recipe: RecipeContent, d: BrewDimensions) {
       variable: "粉水比",
       from: `1:${formatRatio(recipe)}`,
       to: "1:15",
-      reason: `甜感 ${d.sweet} 偏低，提高浓度通常能带出更明显的甜感。`,
+      reason: `甜感 ${d.sweet} 偏低，收紧粉水比会提高浓度并改变萃取率；用下一杯验证浓度是否是主要原因。`,
       principle: "只改粉水比，其余参数不动。",
       advanced: ["放缓注水节奏", "水温微升 1°C"],
       source: "local" as const,

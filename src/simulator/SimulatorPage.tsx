@@ -1,10 +1,14 @@
 import {
   useEffect,
   useMemo,
+  useRef,
   useState,
   type PointerEvent,
   type ReactNode,
 } from "react";
+import { useLiveQuery } from "dexie-react-hooks";
+import { Link, useSearchParams } from "react-router-dom";
+import { db } from "../db";
 import {
   character,
   formatTime,
@@ -25,6 +29,12 @@ import {
   type RadarValues,
 } from "./RadarChart";
 import { ExtractionChart, PourTimeline } from "./SimulatorCharts";
+import {
+  buildExperimentPlan,
+  changedExperimentControls,
+  experimentImpacts,
+  simulatorSupportsRecipe,
+} from "./experiment";
 
 type MetricKey =
   "acid" | "sweet" | "bitter" | "clarity" | "body" | "aftertaste";
@@ -338,6 +348,18 @@ function InfoDialog({
 }
 
 export function SimulatorPage() {
+  const [search] = useSearchParams();
+  const sourceJournalId = search.get("journal");
+  const sourceJournal = useLiveQuery(
+    () => (sourceJournalId ? db.journals.get(sourceJournalId) : undefined),
+    [sourceJournalId],
+    null,
+  );
+  const sourceBean = useLiveQuery(
+    () => (sourceJournal ? db.beans.get(sourceJournal.beanId) : undefined),
+    [sourceJournal?.beanId],
+    null,
+  );
   const [state, setState] = useState(initialState);
   const result = useMemo(() => taste(state), [state]);
   const cup = useMemo(() => character(result, state), [result, state]);
@@ -349,8 +371,64 @@ export function SimulatorPage() {
   const [radarCollapsed, setRadarCollapsed] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [infoKey, setInfoKey] = useState<InfoKey | null>(null);
+  const initializedExperiment = useRef<string | null>(null);
+  const experiment = useMemo(
+    () =>
+      sourceJournal?.aiReview &&
+      sourceBean &&
+      simulatorSupportsRecipe(sourceJournal.recipeSnapshot)
+        ? buildExperimentPlan(
+            sourceBean,
+            sourceJournal.recipeSnapshot,
+            sourceJournal.aiReview,
+          )
+        : null,
+    [sourceBean, sourceJournal],
+  );
   const activeMetrics = impacts[activeControl];
   const comparisonBase = pinned ?? baseline;
+  const experimentChanges = experiment
+    ? changedExperimentControls(experiment.baseline, state)
+    : [];
+  const predictedImpacts = experiment?.supported
+    ? experimentImpacts(experiment)
+    : [];
+  const experimentValid = Boolean(
+    experiment?.supported &&
+    experiment.control &&
+    experimentChanges.length === 1 &&
+    experimentChanges[0] === experiment.control,
+  );
+
+  useEffect(() => {
+    if (!sourceJournalId || !experiment) return;
+    if (initializedExperiment.current === sourceJournalId) return;
+    initializedExperiment.current = sourceJournalId;
+    setState(experiment.candidate);
+    setBaseline(taste(experiment.baseline));
+    setPinned(taste(experiment.baseline));
+    if (experiment.control) {
+      setActiveControl(experiment.control);
+      setOpenGroup(
+        experiment.control === "roast" || experiment.control === "process"
+          ? "foundation"
+          : experiment.control === "grind" ||
+              experiment.control === "temp" ||
+              experiment.control === "ratio" ||
+              experiment.control === "minerals"
+            ? "extraction"
+            : "craft",
+      );
+    }
+  }, [experiment, sourceJournalId]);
+
+  function restoreExperiment() {
+    if (!experiment) return;
+    setState(experiment.candidate);
+    setBaseline(taste(experiment.baseline));
+    setPinned(taste(experiment.baseline));
+    if (experiment.control) setActiveControl(experiment.control);
+  }
 
   function update<K extends keyof SimulatorState>(
     key: K,
@@ -420,10 +498,16 @@ export function SimulatorPage() {
       <EngineSummary result={result} />
       <button
         className={`sim-pin ${pinned ? "active" : ""}`}
-        onClick={() => setPinned(pinned ? null : result)}
+        onClick={() =>
+          experiment ? restoreExperiment() : setPinned(pinned ? null : result)
+        }
         type="button"
       >
-        {pinned ? "✕ 清除基准杯" : "▸ 钉住这杯，再调一杯对比"}
+        {experiment
+          ? "↻ 恢复日记基准与 AI 实验杯"
+          : pinned
+            ? "✕ 清除基准杯"
+            : "▸ 钉住这杯，再调一杯对比"}
       </button>
       {pinned && <Comparison pinned={pinned} result={result} />}
       <div className="sim-under-hood">
@@ -476,6 +560,80 @@ export function SimulatorPage() {
           ))}
         </div>
       </header>
+
+      {sourceJournalId && sourceJournal === null && (
+        <div className="sim-experiment-loading">// 正在读取日记实验...</div>
+      )}
+      {sourceJournalId && sourceJournal === undefined && (
+        <div className="sim-experiment-error">
+          找不到这篇日记，已进入自由实验模式。
+        </div>
+      )}
+      {sourceJournal && !sourceJournal.aiReview && (
+        <div className="sim-experiment-error">
+          这篇日记还没有复盘建议，无法生成单变量对照实验。
+          <Link to={`/journal/${sourceJournal.id}`}>返回日记生成建议</Link>
+        </div>
+      )}
+      {sourceJournal?.aiReview &&
+        !simulatorSupportsRecipe(sourceJournal.recipeSnapshot) && (
+          <div className="sim-experiment-error">
+            实验室模型当前只支持热冲，不能用热冲模型推演
+            {sourceJournal.recipeSnapshot.method}。
+            <Link to={`/journal/${sourceJournal.id}`}>返回这篇日记</Link>
+          </div>
+        )}
+      {sourceJournal?.aiReview && sourceBean && experiment && (
+        <section className="sim-experiment-brief" aria-label="日记对照实验">
+          <div className="sim-experiment-title">
+            <span>JOURNAL → LAB · 单变量对照</span>
+            <h2>验证「{sourceJournal.aiReview.variable}」是不是关键原因</h2>
+            <p>{sourceJournal.aiReview.reason}</p>
+          </div>
+          <div className="sim-experiment-change">
+            <small>唯一变量</small>
+            <b>{sourceJournal.aiReview.variable}</b>
+            <span>{sourceJournal.aiReview.from}</span>
+            <i>→</i>
+            <strong>{sourceJournal.aiReview.to}</strong>
+          </div>
+          {predictedImpacts.length > 0 && (
+            <div className="sim-experiment-impacts">
+              <small>模型预估影响 · 与日记一致</small>
+              <div>
+                {predictedImpacts.map((impact) => (
+                  <span
+                    className={
+                      impact.delta === 0
+                        ? "same"
+                        : impact.delta > 0
+                          ? "up"
+                          : "down"
+                    }
+                    key={impact.key}
+                  >
+                    {impact.label}{" "}
+                    <b>
+                      {impact.delta === 0
+                        ? "—"
+                        : `${impact.delta > 0 ? "↑" : "↓"}${Math.abs(impact.delta)}`}
+                    </b>
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+          <div
+            className={`sim-experiment-status ${experimentValid ? "valid" : "warn"}`}
+          >
+            {experiment.supported
+              ? experimentValid
+                ? "基准杯已固定，实验杯只改变了这一个变量。"
+                : `当前已改动 ${experimentChanges.length} 个变量；恢复实验以保持因果清晰。`
+              : "该建议无法可靠换算成实验室旋钮，已载入原配方供手动观察。"}
+          </div>
+        </section>
+      )}
 
       <section
         aria-label="实时口感雷达"

@@ -50,12 +50,19 @@ import {
   recipeSnapshotFrom,
   type AiSuggestion,
   type AnalysisResult,
+  type Bean,
   type BrewDimensions,
   type BrewMethod,
   type RecipeContent,
   type RecipeSnapshot,
   type SavedRecipe,
 } from "./models";
+import {
+  buildExperimentPlan,
+  experimentImpacts,
+  simulatorSupportsRecipe,
+  type ExperimentImpact,
+} from "./simulator/experiment";
 
 const defaultDims: BrewDimensions = {
   acid: 3,
@@ -898,7 +905,22 @@ export function JournalDetail() {
                     : "◇ 使用本地规则生成建议"}
                 </button>
               )}
-              {journal.aiReview && <Analysis result={journal.aiReview} />}
+              {journal.aiReview && (
+                <Analysis
+                  result={journal.aiReview}
+                  bean={bean}
+                  recipe={journal.recipeSnapshot}
+                />
+              )}
+              {journal.aiReview &&
+                simulatorSupportsRecipe(journal.recipeSnapshot) && (
+                  <Link
+                    className="primary full"
+                    to={`/simulator?journal=${journal.id}`}
+                  >
+                    ▸ 去实验室验证这条建议
+                  </Link>
+                )}
               {journal.aiReview && (
                 <button className="ghost full" onClick={() => generate()}>
                   ↻ 重新生成
@@ -921,7 +943,45 @@ export function JournalDetail() {
   );
 }
 
-function Analysis({ result }: { result: AnalysisResult }) {
+function ImpactPreview({ impacts }: { impacts: ExperimentImpact[] }) {
+  return (
+    <div className="experiment-impact-preview">
+      {impacts.map((impact) => (
+        <div
+          className={
+            impact.delta === 0 ? "same" : impact.delta > 0 ? "up" : "down"
+          }
+          key={impact.key}
+        >
+          <span>{impact.label}</span>
+          <b>
+            {impact.delta === 0
+              ? "—"
+              : `${impact.delta > 0 ? "↑" : "↓"}${Math.abs(impact.delta)}`}
+          </b>
+          <small>
+            {impact.before} → {impact.after}
+          </small>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function Analysis({
+  result,
+  bean,
+  recipe,
+}: {
+  result: AnalysisResult;
+  bean: Bean;
+  recipe: RecipeContent;
+}) {
+  const simulatorSupported = simulatorSupportsRecipe(recipe);
+  const plan = simulatorSupported
+    ? buildExperimentPlan(bean, recipe, result)
+    : null;
+  const impacts = plan?.supported ? experimentImpacts(plan) : [];
   return (
     <div className="analysis">
       <h4>只调一个变量</h4>
@@ -933,6 +993,17 @@ function Analysis({ result }: { result: AnalysisResult }) {
       </div>
       <small>为什么这么改</small>
       <p>{result.reason}</p>
+      {impacts.length > 0 && (
+        <section className="analysis-impact">
+          <small>实验室模型预演 · 进入后保持一致</small>
+          <ImpactPreview impacts={impacts} />
+        </section>
+      )}
+      {!simulatorSupported && (
+        <p className="analysis-model-limit">
+          实验室模型当前只支持热冲，暂不模拟{recipe.method}的影响。
+        </p>
+      )}
       <em>// {result.principle}</em>
       {result.advanced.length > 0 && (
         <details>
