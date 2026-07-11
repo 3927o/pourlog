@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>POUR.LOG · 手冲陪学 设计系统</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="tokens.css">
+<style>
+  * { box-sizing: border-box; -webkit-font-smoothing: antialiased; }
+  body {
+    margin: 0;
+    background: var(--app-bg);
+    font-family: var(--font-sans);
+    color: var(--ink);
+  }
+  a { color: var(--accent); }
+  a:hover { color: #2f5334; }
+
+  .page { max-width: 1080px; margin: 0 auto; padding: 64px 56px 96px; }
+
+  .mono { font-family: var(--font-mono); }
+
+  /* masthead */
+  .masthead {
+    border: var(--border-strong);
+    background: var(--ink);
+    color: var(--ink-fg);
+    padding: 34px 36px;
+  }
+  .masthead .brand { font-family: var(--font-mono); font-size: 12px; letter-spacing: var(--ls-brand); color: var(--accent-l); }
+  .masthead h1 { margin: 14px 0 0; font-size: 44px; font-weight: 900; letter-spacing: .01em; }
+  .masthead .theme { font-family: var(--font-mono); font-size: 12px; color: var(--text-disabled); margin-top: 14px; line-height: 1.9; }
+
+  /* section header */
+  .section { margin-top: 48px; }
+  .section-head {
+    display: flex; align-items: baseline; gap: 12px;
+    border-bottom: var(--border-strong); padding-bottom: 10px;
+  }
+  .section-head .num { font-family: var(--font-mono); font-size: 13px; color: var(--accent); font-weight: 700; }
+  .section-head h2 { margin: 0; font-size: 22px; font-weight: 900; }
+  .section-head .note { font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); }
+
+  .panel { border: var(--border-hairline); background: var(--card); }
+  .panel-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: var(--ls-label); color: var(--text-muted); }
+
+  /* 01 color */
+  .swatch-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-top: 22px; }
+  .swatch .chip { height: 88px; border-bottom: var(--border-hairline); }
+  .swatch .body { padding: 11px 12px; }
+  .swatch .name { font-size: 13px; font-weight: 700; }
+  .swatch .hex { font-family: var(--font-mono); font-size: 11px; color: var(--text-secondary); margin-top: 3px; }
+  .swatch .token { font-family: var(--font-mono); font-size: 10px; color: var(--text-muted); margin-top: 2px; }
+  .swatch .desc { font-size: 11px; color: var(--text-secondary); line-height: 1.6; margin-top: 7px; }
+
+  .gray-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
+  .gray-card { border: var(--border-hairline); background: var(--card); padding: 12px 14px; min-width: 150px; }
+  .gray-card .name { font-size: 15px; font-weight: 700; }
+  .gray-card .meta { font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); margin-top: 5px; }
+
+  /* 02 type */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 22px; }
+  .type-panel { padding: 20px; }
+  .type-scale { margin-top: 16px; }
+  .type-row { display: flex; align-items: baseline; gap: 18px; padding: 14px 20px; border-top: 1px solid var(--surface-divider); }
+  .type-row .meta { width: 120px; flex: none; font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); }
+  .type-row .sample { flex: 1; }
+  .type-row .use { flex: none; font-size: 11px; color: var(--text-secondary); width: 130px; text-align: right; }
+
+  /* 03 components */
+  .comp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 22px; }
+  .comp-panel { padding: 20px; }
+
+  .btn-stack { display: flex; flex-direction: column; gap: 10px; margin-top: 14px; }
+  .btn { font-family: var(--font-mono); cursor: pointer; border: none; border-radius: var(--radius); }
+  .btn-primary { background: var(--accent); color: #fff; font-size: 13px; letter-spacing: var(--ls-cta); padding: 15px; }
+  .btn-dark { background: var(--ink); color: var(--ink-fg); font-size: 12px; letter-spacing: .1em; padding: 12px; }
+  .btn-ghost { background: none; border: var(--border-dashed); color: var(--text-secondary); font-size: 12px; letter-spacing: .1em; padding: 14px; }
+  .btn-danger { background: none; border: 1px solid var(--hot); color: var(--hot); font-size: 12px; letter-spacing: .08em; padding: 12px; }
+
+  .pill-caption { font-size: 11px; color: var(--text-secondary); margin-top: 14px; }
+  .pill-row { display: flex; gap: 7px; margin-top: 8px; flex-wrap: wrap; align-items: center; }
+  .pill { font-family: var(--font-mono); font-size: 12px; padding: 8px 13px; border: var(--border-hairline); color: var(--text-secondary); }
+  .pill.solid-sel { border-color: var(--accent); background: var(--accent); color: #fff; }
+  .pill.outline-sel { border-color: var(--accent); background: var(--card); color: var(--accent); }
+  .tag { font-family: var(--font-mono); font-size: 11px; color: var(--accent); border: var(--border-hairline); padding: 2px 8px; }
+  .badge-best { font-family: var(--font-mono); font-size: 9px; color: #fff; background: var(--accent); padding: 2px 6px; letter-spacing: .08em; }
+
+  .bean-card { background: #fff; border: var(--border-hairline); margin-top: 12px; padding: var(--space-card-pad); }
+  .bean-card .meta-row { display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 10px; color: var(--text-muted); letter-spacing: var(--ls-meta); }
+  .bean-card .name-row { display: flex; align-items: center; gap: 8px; margin-top: 9px; }
+  .bean-card .name { font-size: 20px; font-weight: 700; }
+  .bean-card .origin { font-family: var(--font-mono); font-size: 11px; color: var(--text-secondary); margin-top: 4px; }
+
+  .spec-grid { display: grid; grid-template-columns: repeat(3, 1fr); border: var(--border-strong); margin-top: 12px; background: #fff; }
+  .spec-cell { padding: 11px 10px; border-right: var(--border-hairline); border-bottom: var(--border-hairline); }
+  .spec-cell .k { font-family: var(--font-mono); font-size: 9px; color: var(--text-muted); letter-spacing: var(--ls-meta); }
+  .spec-cell .v { font-family: var(--font-mono); font-size: 14px; font-weight: 500; margin-top: 4px; }
+
+  .bars { margin-top: 14px; display: flex; flex-direction: column; gap: 9px; }
+  .bar-row { display: flex; align-items: center; gap: 10px; }
+  .bar-row .dim { width: 52px; font-family: var(--font-mono); font-size: 12px; color: var(--text-body); }
+  .bar-row .track { flex: 1; height: 8px; background: var(--surface-track); }
+  .bar-row .fill { height: 8px; background: var(--accent); }
+  .bar-row .val { width: 14px; text-align: right; font-family: var(--font-mono); font-size: 13px; font-weight: 700; color: var(--accent); }
+  .bar-row.hot .fill { background: var(--hot); }
+  .bar-row.hot .val { color: var(--hot); }
+  .bar-note { font-family: var(--font-mono); font-size: 10px; color: var(--text-muted); margin-top: 12px; }
+
+  .chrome-header { background: var(--ink); color: var(--ink-fg); padding: 14px 16px; margin-top: 12px; }
+  .chrome-header .brand { font-family: var(--font-mono); font-size: 11px; letter-spacing: var(--ls-brand); color: var(--accent-l); }
+  .chrome-header .title { font-size: 22px; font-weight: 900; margin-top: 8px; }
+  .tabbar { display: flex; background: #fff; border: var(--border-hairline); border-top: none; height: 56px; }
+  .tabbar button {
+    flex: 1; background: none; border: none; border-top: 2px solid transparent; cursor: pointer;
+    font-family: var(--font-mono); font-size: 11px; letter-spacing: .1em; color: var(--text-muted);
+  }
+  .tabbar button.active { border-top: var(--border-active-top); color: var(--ink); }
+  .toast-wrap { display: flex; justify-content: center; margin-top: 16px; }
+  .toast { background: var(--ink); color: var(--ink-fg); font-family: var(--font-mono); font-size: 12px; letter-spacing: .04em; padding: 10px 16px; box-shadow: var(--shadow-toast); }
+
+  /* 04 principles */
+  .principle-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin-top: 22px; }
+  .principle { border: var(--border-hairline); background: var(--card); padding: 16px 18px; }
+  .principle .n { font-family: var(--font-mono); font-size: 12px; color: var(--accent); font-weight: 700; }
+  .principle .title { font-size: 15px; font-weight: 700; margin-top: 6px; }
+  .principle .body { font-size: 13px; color: var(--text-body); line-height: 1.8; margin-top: 6px; }
+
+  .footnote { font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); margin-top: 22px; }
+
+  @media (max-width: 860px) {
+    .page { padding: 40px 20px 72px; }
+    .swatch-grid { grid-template-columns: repeat(2, 1fr); }
+    .two-col, .comp-grid, .principle-grid { grid-template-columns: 1fr; }
+    .masthead h1 { font-size: 32px; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- MASTHEAD -->
+  <header class="masthead">
+    <div class="brand">POUR.LOG / DESIGN SYSTEM</div>
+    <h1>手冲陪学 · 设计系统</h1>
+    <div class="theme">theme = 森林绿 · Forest Green<br>实验室 / 极客数据化 · 等宽字管数据 · 黑体管标题 · 直角描边 · 单一强调绿</div>
+  </header>
+
+  <!-- 01 COLOR -->
+  <section class="section">
+    <div class="section-head">
+      <span class="num">01</span>
+      <h2>色彩 · Color</h2>
+      <span class="note">core tokens</span>
+    </div>
+    <div class="swatch-grid">
+      <div class="swatch panel">
+        <div class="chip" style="background:#3f6b45"></div>
+        <div class="body">
+          <div class="name">强调绿 Accent</div>
+          <div class="hex">#3f6b45</div>
+          <div class="token">--accent</div>
+          <div class="desc">主按钮 · 进度 · 激活 · 数据条</div>
+        </div>
+      </div>
+      <div class="swatch panel">
+        <div class="chip" style="background:#8fb18a"></div>
+        <div class="body">
+          <div class="name">强调浅 Accent-L</div>
+          <div class="hex">#8fb18a</div>
+          <div class="token">--accent-l</div>
+          <div class="desc">深底之上的品牌字</div>
+        </div>
+      </div>
+      <div class="swatch panel">
+        <div class="chip" style="background:#1c231d"></div>
+        <div class="body">
+          <div class="name">墨 Ink</div>
+          <div class="hex">#1c231d</div>
+          <div class="token">--ink</div>
+          <div class="desc">深底容器 · 主文字</div>
+        </div>
+      </div>
+      <div class="swatch panel">
+        <div class="chip" style="background:#e9ede6"></div>
+        <div class="body">
+          <div class="name">墨前景 Ink-FG</div>
+          <div class="hex">#e9ede6</div>
+          <div class="token">--ink-fg</div>
+          <div class="desc">墨底之上的字</div>
+        </div>
+      </div>
+      <div class="swatch panel">
+        <div class="chip" style="background:#edf0ea"></div>
+        <div class="body">
+          <div class="name">应用底 App-BG</div>
+          <div class="hex">#edf0ea</div>
+          <div class="token">--app-bg</div>
+          <div class="desc">底层画布</div>
+        </div>
+      </div>
+      <div class="swatch panel">
+        <div class="chip" style="background:#f6f8f3"></div>
+        <div class="body">
+          <div class="name">卡片 Card</div>
+          <div class="hex">#f6f8f3</div>
+          <div class="token">--card</div>
+          <div class="desc">卡片 / 输入框底</div>
+        </div>
+      </div>
+      <div class="swatch panel">
+        <div class="chip" style="background:#d5dbcf"></div>
+        <div class="body">
+          <div class="name">描边 Border</div>
+          <div class="hex">#d5dbcf</div>
+          <div class="token">--border</div>
+          <div class="desc">卡片 / 分隔 / 网格</div>
+        </div>
+      </div>
+      <div class="swatch panel">
+        <div class="chip" style="background:#c15a3c"></div>
+        <div class="body">
+          <div class="name">警示 Hot</div>
+          <div class="hex">#c15a3c</div>
+          <div class="token">--hot</div>
+          <div class="desc">过萃 / 删除 / 错误</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel-label" style="margin-top:26px">文字灰阶 · TEXT GRAYS</div>
+    <div class="gray-row">
+      <div class="gray-card"><div class="name" style="color:#2a322a">强正文</div><div class="meta">#2a322a · text.strong</div></div>
+      <div class="gray-card"><div class="name" style="color:#4a524a">正文</div><div class="meta">#4a524a · text.body</div></div>
+      <div class="gray-card"><div class="name" style="color:#6f776d">次级</div><div class="meta">#6f776d · text.secondary</div></div>
+      <div class="gray-card"><div class="name" style="color:#9aa295">元信息</div><div class="meta">#9aa295 · text.muted</div></div>
+      <div class="gray-card"><div class="name" style="color:#b7c1b1">禁用</div><div class="meta">#b7c1b1 · text.disabled</div></div>
+    </div>
+  </section>
+
+  <!-- 02 TYPE -->
+  <section class="section">
+    <div class="section-head">
+      <span class="num">02</span>
+      <h2>字体 · Type</h2>
+      <span class="note">Noto Sans SC + JetBrains Mono</span>
+    </div>
+
+    <div class="two-col">
+      <div class="panel type-panel">
+        <div class="panel-label">SANS · 标题 / 正文</div>
+        <div style="font-size:34px;font-weight:900;margin-top:10px">耶加雪菲</div>
+        <div style="font-size:15px;font-weight:500;margin-top:8px">花香很清楚,尾段回甘明显。</div>
+        <div class="mono" style="font-size:11px;color:var(--text-secondary);margin-top:12px">300 · 400 · 500 · 700 · 900</div>
+      </div>
+      <div class="panel type-panel">
+        <div class="panel-label">MONO · 数据 / 参数 / 标签</div>
+        <div class="mono" style="font-size:26px;font-weight:700;margin-top:12px">1:16 · 88°C</div>
+        <div class="mono" style="font-size:13px;color:var(--text-body);margin-top:10px">POUR.LOG / 手冲陪学</div>
+        <div class="mono" style="font-size:11px;color:var(--text-secondary);margin-top:12px">400 · 500 · 700</div>
+      </div>
+    </div>
+
+    <div class="panel type-scale">
+      <div class="type-row">
+        <span class="meta">30 / 900</span>
+        <span class="sample" style="font-size:30px;font-weight:900">详情大标题</span>
+        <span class="use">display</span>
+      </div>
+      <div class="type-row">
+        <span class="meta">26 / 900</span>
+        <span class="sample" style="font-size:26px;font-weight:900">页面标题</span>
+        <span class="use">h1</span>
+      </div>
+      <div class="type-row">
+        <span class="meta">20 / 700</span>
+        <span class="sample" style="font-size:20px;font-weight:700">豆名 · 卡片主名</span>
+        <span class="use">title</span>
+      </div>
+      <div class="type-row">
+        <span class="meta">18 / 700</span>
+        <span class="sample" style="font-size:18px;font-weight:700">区块小标题</span>
+        <span class="use">lead</span>
+      </div>
+      <div class="type-row">
+        <span class="meta">14 / 400</span>
+        <span class="sample" style="font-size:14px">正文文字,行高 1.8 展开阅读。</span>
+        <span class="use">body</span>
+      </div>
+      <div class="type-row">
+        <span class="meta">mono 12</span>
+        <span class="sample mono" style="font-size:12px">1:16 · 92°C · 2:30</span>
+        <span class="use">参数值</span>
+      </div>
+      <div class="type-row">
+        <span class="meta">mono 10 / .12em</span>
+        <span class="sample mono" style="font-size:10px;letter-spacing:.12em;color:var(--text-muted)">SECTION LABEL</span>
+        <span class="use">小节标签</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 03 COMPONENTS -->
+  <section class="section">
+    <div class="section-head">
+      <span class="num">03</span>
+      <h2>组件 · Components</h2>
+    </div>
+
+    <div class="comp-grid">
+
+      <!-- buttons -->
+      <div class="panel comp-panel">
+        <div class="panel-label">按钮 · BUTTONS</div>
+        <div class="btn-stack">
+          <button class="btn btn-primary">▸ 主按钮 PRIMARY</button>
+          <button class="btn btn-dark">下一步 · 墨色 DARK</button>
+          <button class="btn btn-ghost">+ 虚线 GHOST</button>
+          <button class="btn btn-danger">✕ 危险 DANGER</button>
+        </div>
+      </div>
+
+      <!-- pills & tags -->
+      <div class="panel comp-panel">
+        <div class="panel-label">选择器 &amp; 标签 · PILLS / TAGS</div>
+        <div class="pill-caption">实心 · pill-solid</div>
+        <div class="pill-row">
+          <span class="pill solid-sel">热冲</span>
+          <span class="pill">冰冲</span>
+          <span class="pill">冷萃</span>
+        </div>
+        <div class="pill-caption">描边 · pill-outline</div>
+        <div class="pill-row">
+          <span class="pill outline-sel">已选</span>
+          <span class="pill">未选</span>
+        </div>
+        <div class="pill-caption">风味标签 &amp; 徽标</div>
+        <div class="pill-row" style="gap:6px">
+          <span class="tag">柑橘</span>
+          <span class="tag">茉莉</span>
+          <span class="badge-best">★BEST</span>
+        </div>
+      </div>
+
+      <!-- bean card -->
+      <div class="panel comp-panel">
+        <div class="panel-label">卡片 · CARD</div>
+        <div class="bean-card">
+          <div class="meta-row"><span>[01] 水洗 · 浅烘 · 06.28</span><span>n=5</span></div>
+          <div class="name-row">
+            <span class="name">耶加雪菲</span>
+            <span class="badge-best">★BEST</span>
+          </div>
+          <div class="origin">埃塞俄比亚 · 科契尔</div>
+        </div>
+      </div>
+
+      <!-- spec grid -->
+      <div class="panel comp-panel">
+        <div class="panel-label">规格网格 · SPEC GRID</div>
+        <div class="spec-grid">
+          <div class="spec-cell"><div class="k">粉水比</div><div class="v">1:16</div></div>
+          <div class="spec-cell"><div class="k">研磨</div><div class="v">中细</div></div>
+          <div class="spec-cell"><div class="k">水温</div><div class="v">88°C</div></div>
+          <div class="spec-cell"><div class="k">注水</div><div class="v">三段</div></div>
+          <div class="spec-cell"><div class="k">总时间</div><div class="v">2:15</div></div>
+          <div class="spec-cell"><div class="k">方式</div><div class="v">热冲</div></div>
+        </div>
+      </div>
+
+      <!-- data bars -->
+      <div class="panel comp-panel">
+        <div class="panel-label">六维数据条 · DATA BARS</div>
+        <div class="bars">
+          <div class="bar-row"><span class="dim">酸</span><div class="track"><div class="fill" style="width:75%"></div></div><span class="val">4</span></div>
+          <div class="bar-row"><span class="dim">甜</span><div class="track"><div class="fill" style="width:75%"></div></div><span class="val">4</span></div>
+          <div class="bar-row hot"><span class="dim">苦</span><div class="track"><div class="fill" style="width:75%"></div></div><span class="val">4</span></div>
+          <div class="bar-row hot"><span class="dim">干净度</span><div class="track"><div class="fill" style="width:25%"></div></div><span class="val">2</span></div>
+          <div class="bar-row"><span class="dim">余韵</span><div class="track"><div class="fill" style="width:75%"></div></div><span class="val">4</span></div>
+          <div class="bar-row"><span class="dim">醇厚度</span><div class="track"><div class="fill" style="width:50%"></div></div><span class="val">3</span></div>
+        </div>
+        <div class="bar-note">苦≥4 / 干净度≤2 → 转警示红 #c15a3c</div>
+      </div>
+
+      <!-- chrome bits -->
+      <div class="panel comp-panel">
+        <div class="panel-label">深底 &amp; 导航 · CHROME</div>
+        <div class="chrome-header">
+          <div class="brand">POUR.LOG / 手冲陪学</div>
+          <div class="title">豆样本库</div>
+        </div>
+        <div class="tabbar">
+          <button class="active">BEANS</button>
+          <button>JOURNAL</button>
+          <button>RECIPES</button>
+        </div>
+        <div class="toast-wrap">
+          <div class="toast">已保存 ✓ · toast</div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- 04 PRINCIPLES -->
+  <section class="section">
+    <div class="section-head">
+      <span class="num">04</span>
+      <h2>原则 · Principles</h2>
+    </div>
+    <div class="principle-grid">
+      <div class="principle">
+        <div class="n">01</div>
+        <div class="title">等宽字管一切数据</div>
+        <div class="body">参数、评分、meta、标签统统用 JetBrains Mono；黑体只留给标题与人写的正文。数字是这个 App 的主角。</div>
+      </div>
+      <div class="principle">
+        <div class="n">02</div>
+        <div class="title">直角,不用圆角</div>
+        <div class="body">卡片、按钮、网格全部直角 1px 描边。克制、精密、有实验记录本的质感。</div>
+      </div>
+      <div class="principle">
+        <div class="n">03</div>
+        <div class="title">单一强调绿</div>
+        <div class="body">#3f6b45 是唯一主动作色,配深墨底做层级;只有过萃/异常/删除才动用警示红。</div>
+      </div>
+      <div class="principle">
+        <div class="n">04</div>
+        <div class="title">色随语义变</div>
+        <div class="body">数据条平时是绿,当苦≥4 或干净度≤2 触发过萃阈值时转红——颜色即诊断。</div>
+      </div>
+    </div>
+    <div class="footnote">机器可读 token 见 → <a href="design-tokens.json">design-tokens.json</a></div>
+  </section>
+
+</div>
+</body>
+</html>

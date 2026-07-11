@@ -1,0 +1,56 @@
+/* POUR.LOG · 手冲陪学 — design tokens (generated from design-tokens.json) */
+:root {
+  /* color */
+  --accent: #3f6b45;        /* 主强调 · 森林绿 */
+  --accent-l: #8fb18a;      /* 深底上的品牌字 */
+  --ink: #1c231d;           /* 深底容器 / 主文字 */
+  --ink-fg: #e9ede6;        /* 墨底之上的字 */
+  --app-bg: #edf0ea;        /* 底层画布 */
+  --card: #f6f8f3;          /* 卡片 / 输入框底 */
+  --border: #d5dbcf;        /* 描边 / 分隔 / 网格 */
+  --hot: #c15a3c;           /* 过萃 / 删除 / 错误 */
+
+  /* text grays */
+  --text-strong: #2a322a;
+  --text-body: #4a524a;
+  --text-secondary: #6f776d;
+  --text-muted: #9aa295;
+  --text-disabled: #b7c1b1;
+
+  /* surfaces */
+  --surface-track: #e0e5db;
+  --surface-divider: #eef1ec;
+  --surface-panel-soft: #fbfcfa;
+  --surface-warn-soft: #fbf3ee;
+
+  /* font */
+  --font-sans: 'Noto Sans SC', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  /* letter-spacing */
+  --ls-brand: 0.22em;
+  --ls-label: 0.12em;
+  --ls-cta: 0.12em;
+  --ls-meta: 0.05em;
+
+  /* radius — 全局直角,系统核心特征 */
+  --radius: 0px;
+
+  /* borders */
+  --border-hairline: 1px solid var(--border);
+  --border-strong: 1px solid var(--ink);
+  --border-dashed: 1px dashed var(--text-disabled);
+  --border-active-top: 2px solid var(--accent);
+
+  /* space */
+  --space-screen-x: 20px;
+  --space-card-pad: 14px 15px;
+  --space-gap-tight: 6px;
+  --space-gap: 8px;
+  --space-gap-md: 12px;
+  --space-section: 20px;
+
+  /* shadow */
+  --shadow-phone: 0 30px 70px -20px rgba(28, 35, 29, .5), 0 8px 24px rgba(28, 35, 29, .18);
+  --shadow-toast: 0 8px 24px rgba(28, 35, 29, .3);
+}
