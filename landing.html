@@ -1,0 +1,1426 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#1c231d" />
+    <meta
+      name="description"
+      content="POUR.LOG · 手冲陪学 — 记录豆子、配方和每一杯的口感,AI 告诉你下一杯该调哪个参数、为什么。数据全在本地,离线可用。"
+    />
+    <title>POUR.LOG · 手冲陪学 — 每一杯,只调一个变量</title>
+    <link rel="icon" href="/icon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700;900&family=JetBrains+Mono:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      /* ============ tokens (来自 docs/design/design-tokens.json v1.1.0) ============ */
+      :root {
+        --accent: #3f6b45;
+        --accent-l: #8fb18a;
+        --ink: #1c231d;
+        --ink-fg: #e9ede6;
+        --app-bg: #edf0ea;
+        --card: #f6f8f3;
+        --border: #d5dbcf;
+        --hot: #c15a3c;
+
+        --text-strong: #2a322a;
+        --text-body: #4a524a;
+        --text-secondary: #6f776d;
+        --text-muted: #9aa295;
+        --text-disabled: #b7c1b1;
+
+        --surface-track: #e0e5db;
+        --surface-divider: #eef1ec;
+        --surface-panel-soft: #fbfcfa;
+        --surface-success-soft: #f0f4ee;
+
+        --font-sans: "Noto Sans SC", system-ui, sans-serif;
+        --font-mono: "JetBrains Mono", monospace;
+
+        --ls-brand: 0.22em;
+        --ls-label: 0.12em;
+        --ls-cta: 0.12em;
+        --ls-meta: 0.05em;
+
+        --border-hairline: 1px solid var(--border);
+        --border-strong: 1px solid var(--ink);
+
+        --state-primary-hover: #35593a;
+        --state-primary-pressed: #2f5334;
+
+        --motion-fast: 120ms;
+        --motion-base: 160ms;
+        --motion-ease: cubic-bezier(0.2, 0, 0, 1);
+
+        --shadow-phone:
+          0 30px 70px -20px rgba(28, 35, 29, 0.5),
+          0 8px 24px rgba(28, 35, 29, 0.18);
+
+        --content-max: 1080px;
+        --screen-x: 20px;
+        /* 深底之上的描边 / 次级字 */
+        --ink-line: rgba(233, 237, 230, 0.16);
+        --ink-dim: rgba(233, 237, 230, 0.62);
+      }
+      @media (min-width: 800px) {
+        :root {
+          --screen-x: 32px;
+        }
+      }
+      @media (min-width: 1080px) {
+        :root {
+          --screen-x: 40px;
+        }
+      }
+
+      /* ============ base ============ */
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      html {
+        scroll-behavior: smooth;
+      }
+      body {
+        font-family: var(--font-sans);
+        font-size: 14px;
+        line-height: 1.7;
+        color: var(--text-body);
+        background: var(--app-bg);
+        -webkit-font-smoothing: antialiased;
+      }
+      a {
+        color: inherit;
+      }
+      :focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
+      }
+      .dark :focus-visible {
+        outline-color: var(--accent-l);
+      }
+      .wrap {
+        max-width: var(--content-max);
+        margin: 0 auto;
+        padding-left: var(--screen-x);
+        padding-right: var(--screen-x);
+      }
+      .mono {
+        font-family: var(--font-mono);
+      }
+      @media (prefers-reduced-motion: reduce) {
+        html {
+          scroll-behavior: auto;
+        }
+        *,
+        *::before,
+        *::after {
+          transition-duration: 0ms !important;
+          animation: none !important;
+        }
+      }
+
+      /* ============ buttons ============ */
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        height: 48px;
+        padding: 0 22px;
+        font-family: var(--font-mono);
+        font-size: 12px;
+        font-weight: 500;
+        letter-spacing: var(--ls-cta);
+        text-decoration: none;
+        text-transform: uppercase;
+        border: 1px solid transparent;
+        transition:
+          background-color var(--motion-fast) var(--motion-ease),
+          border-color var(--motion-fast) var(--motion-ease),
+          color var(--motion-fast) var(--motion-ease);
+      }
+      .btn-primary {
+        background: var(--accent);
+        color: #fff;
+      }
+      .btn-primary:hover {
+        background: var(--state-primary-hover);
+      }
+      .btn-primary:active {
+        background: var(--state-primary-pressed);
+      }
+      .btn-ghost {
+        border-color: var(--border);
+        color: var(--text-body);
+      }
+      .btn-ghost:hover {
+        border-color: var(--ink);
+        color: var(--ink);
+      }
+      .dark .btn-ghost {
+        border-color: var(--ink-line);
+        color: var(--ink-fg);
+      }
+      .dark .btn-ghost:hover {
+        border-color: var(--ink-fg);
+      }
+
+      /* ============ header + hero (深底) ============ */
+      .dark {
+        background: var(--ink);
+        color: var(--ink-fg);
+        /* 实验室网格线 · 极低对比 */
+        background-image:
+          linear-gradient(rgba(233, 237, 230, 0.035) 1px, transparent 1px),
+          linear-gradient(
+            90deg,
+            rgba(233, 237, 230, 0.035) 1px,
+            transparent 1px
+          );
+        background-size: 28px 28px;
+      }
+      header {
+        border-bottom: 1px solid var(--ink-line);
+      }
+      .header-in {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        height: 64px;
+      }
+      .brand {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        text-decoration: none;
+      }
+      .brand-mark {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 26px;
+        height: 26px;
+        border: 1px solid var(--accent);
+        font-family: var(--font-mono);
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--accent-l);
+      }
+      .brand-name {
+        font-family: var(--font-mono);
+        font-size: 13px;
+        font-weight: 700;
+        letter-spacing: var(--ls-brand);
+        color: var(--ink-fg);
+      }
+      .nav {
+        display: none;
+        align-items: center;
+        gap: 26px;
+      }
+      @media (min-width: 800px) {
+        .nav {
+          display: inline-flex;
+        }
+      }
+      .nav a {
+        font-family: var(--font-mono);
+        font-size: 11px;
+        letter-spacing: var(--ls-label);
+        color: var(--ink-dim);
+        text-decoration: none;
+        transition: color var(--motion-fast) var(--motion-ease);
+      }
+      .nav a:hover {
+        color: var(--ink-fg);
+      }
+      .nav .btn {
+        height: 36px;
+        padding: 0 16px;
+      }
+
+      .hero {
+        /* 底部留足 96px:容纳 --shadow-phone 向下 ~80px 的衰减,避免溢到浅色区块 */
+        padding: 64px 0 96px;
+      }
+      .hero-in {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 56px;
+        align-items: center;
+      }
+      @media (min-width: 1080px) {
+        .hero {
+          padding: 88px 0 96px;
+        }
+        .hero-in {
+          grid-template-columns: minmax(0, 1fr) 330px;
+          gap: 72px;
+        }
+      }
+      .hero-label {
+        font-family: var(--font-mono);
+        font-size: 11px;
+        letter-spacing: var(--ls-label);
+        color: var(--accent-l);
+        margin-bottom: 20px;
+      }
+      .hero h1 {
+        font-size: clamp(30px, 4.5vw, 40px);
+        font-weight: 900;
+        line-height: 1.3;
+        color: var(--ink-fg);
+        margin-bottom: 18px;
+      }
+      .hero h1 em {
+        font-style: normal;
+        color: var(--accent-l);
+      }
+      .hero-sub {
+        max-width: 460px;
+        font-size: 15px;
+        color: var(--ink-dim);
+        margin-bottom: 32px;
+      }
+      .hero-cta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-bottom: 28px;
+      }
+      .hero-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px 20px;
+        font-family: var(--font-mono);
+        font-size: 10px;
+        letter-spacing: var(--ls-label);
+        color: var(--ink-dim);
+      }
+      .hero-meta span::before {
+        content: "· ";
+        color: var(--accent-l);
+      }
+
+      /* ============ phone mockup (展示用) ============ */
+      .phone {
+        width: min(330px, 100%);
+        margin: 0 auto;
+        background: var(--app-bg);
+        /* 深底上用浅描边勾出设备轮廓 */
+        border: 1px solid var(--ink-line);
+        box-shadow: var(--shadow-phone);
+        color: var(--text-body);
+        background-image: none;
+      }
+      .phone-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 14px;
+        background: var(--ink);
+        font-family: var(--font-mono);
+        font-size: 9px;
+        letter-spacing: var(--ls-label);
+        color: var(--accent-l);
+      }
+      .phone-bar b {
+        font-weight: 700;
+        letter-spacing: var(--ls-brand);
+      }
+      .phone-body {
+        padding: 14px;
+        display: grid;
+        gap: 12px;
+      }
+      .p-card {
+        background: var(--card);
+        border: var(--border-hairline);
+        padding: 12px 13px;
+      }
+      .p-meta {
+        font-family: var(--font-mono);
+        font-size: 9px;
+        letter-spacing: var(--ls-label);
+        color: var(--text-muted);
+        margin-bottom: 4px;
+      }
+      .p-title {
+        font-size: 17px;
+        font-weight: 700;
+        color: var(--text-strong);
+        line-height: 1.4;
+      }
+      .p-tags {
+        display: flex;
+        gap: 6px;
+        margin-top: 8px;
+      }
+      .p-tag {
+        border: var(--border-hairline);
+        padding: 1px 7px;
+        font-family: var(--font-mono);
+        font-size: 9px;
+        color: var(--accent);
+      }
+      .spec {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        border: var(--border-strong);
+        background: var(--card);
+      }
+      .spec > div {
+        padding: 8px 10px 7px;
+        border-right: var(--border-hairline);
+        border-bottom: var(--border-hairline);
+      }
+      .spec > div:nth-child(3n) {
+        border-right: 0;
+      }
+      .spec > div:nth-last-child(-n + 3) {
+        border-bottom: 0;
+      }
+      .spec i {
+        display: block;
+        font-style: normal;
+        font-family: var(--font-mono);
+        font-size: 8px;
+        letter-spacing: var(--ls-label);
+        color: var(--text-muted);
+        margin-bottom: 2px;
+      }
+      .spec b {
+        font-family: var(--font-mono);
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--text-strong);
+      }
+      .p-label {
+        font-family: var(--font-mono);
+        font-size: 9px;
+        letter-spacing: var(--ls-label);
+        color: var(--text-secondary);
+        margin-bottom: 9px;
+      }
+      .dim {
+        display: grid;
+        gap: 7px;
+      }
+      .dim-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-family: var(--font-mono);
+        font-size: 10px;
+        color: var(--text-secondary);
+      }
+      .dim-row em {
+        font-style: normal;
+        width: 3.6em;
+        flex: none;
+        font-family: var(--font-sans);
+        font-size: 11px;
+      }
+      .dim-row output {
+        width: 2.6em;
+        flex: none;
+        text-align: right;
+        color: var(--text-muted);
+      }
+      .dim-row.hot output {
+        color: var(--hot);
+      }
+      .track {
+        flex: 1;
+        height: 6px;
+        background: var(--surface-track);
+      }
+      .fill {
+        height: 100%;
+        background: var(--accent);
+      }
+      .hot .fill {
+        background: var(--hot);
+      }
+      .p-ai {
+        background: var(--surface-panel-soft);
+        border: var(--border-hairline);
+        padding: 11px 13px;
+      }
+      .p-ai .p-label {
+        color: var(--accent);
+        margin-bottom: 6px;
+      }
+      .p-ai p {
+        font-size: 12px;
+        line-height: 1.75;
+        color: var(--text-body);
+      }
+      .p-ai p b {
+        color: var(--accent);
+        font-weight: 700;
+      }
+      .p-ai .p-go {
+        margin-top: 8px;
+        font-family: var(--font-mono);
+        font-size: 10px;
+        letter-spacing: var(--ls-label);
+        color: var(--accent);
+      }
+
+      /* ============ sections (浅底) ============ */
+      section {
+        padding: 76px 0;
+      }
+      .sec-label {
+        font-family: var(--font-mono);
+        font-size: 11px;
+        letter-spacing: var(--ls-label);
+        color: var(--accent);
+        margin-bottom: 12px;
+      }
+      .sec-title {
+        font-size: 26px;
+        font-weight: 900;
+        color: var(--text-strong);
+        line-height: 1.35;
+        margin-bottom: 12px;
+      }
+      .sec-sub {
+        max-width: 560px;
+        color: var(--text-secondary);
+        margin-bottom: 40px;
+      }
+      .dark .sec-label {
+        color: var(--accent-l);
+      }
+      .dark .sec-title {
+        color: var(--ink-fg);
+      }
+      .dark .sec-sub {
+        color: var(--ink-dim);
+      }
+
+      /* features */
+      .grid-feat {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 14px;
+      }
+      @media (min-width: 800px) {
+        .grid-feat {
+          grid-template-columns: repeat(2, 1fr);
+          gap: 16px;
+        }
+      }
+      @media (min-width: 1080px) {
+        .grid-feat {
+          grid-template-columns: repeat(3, 1fr);
+        }
+      }
+      .feat {
+        background: var(--card);
+        border: var(--border-hairline);
+        padding: 20px 20px 22px;
+        transition: border-color var(--motion-base) var(--motion-ease);
+      }
+      .feat:hover {
+        border-color: var(--ink); /* 卡片 hover:只加深描边,不上移不加阴影 */
+      }
+      .feat-no {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        font-family: var(--font-mono);
+        font-size: 10px;
+        letter-spacing: var(--ls-label);
+        color: var(--text-muted);
+        margin-bottom: 14px;
+      }
+      .feat-no span:last-child {
+        color: var(--accent);
+      }
+      .feat h3 {
+        font-size: 17px;
+        font-weight: 700;
+        color: var(--text-strong);
+        margin-bottom: 8px;
+      }
+      .feat p {
+        font-size: 13px;
+        color: var(--text-secondary);
+      }
+      .feat .mono-line {
+        margin-top: 12px;
+        padding-top: 10px;
+        border-top: 1px solid var(--surface-divider);
+        font-family: var(--font-mono);
+        font-size: 10px;
+        letter-spacing: var(--ls-meta);
+        color: var(--text-muted);
+      }
+      .feat .mono-line b {
+        color: var(--accent);
+        font-weight: 500;
+      }
+
+      /* method */
+      #method {
+        background: var(--card);
+        border-top: var(--border-hairline);
+        border-bottom: var(--border-hairline);
+      }
+      .steps {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 14px;
+        margin-bottom: 40px;
+        counter-reset: step;
+      }
+      @media (min-width: 800px) {
+        .steps {
+          grid-template-columns: repeat(3, 1fr);
+          gap: 16px;
+        }
+      }
+      .step {
+        counter-increment: step;
+        border: var(--border-hairline);
+        background: var(--surface-panel-soft);
+        padding: 18px 20px 20px;
+      }
+      .step::before {
+        content: "STEP 0" counter(step);
+        display: block;
+        font-family: var(--font-mono);
+        font-size: 10px;
+        letter-spacing: var(--ls-label);
+        color: var(--accent);
+        margin-bottom: 12px;
+      }
+      .step h3 {
+        font-size: 16px;
+        font-weight: 700;
+        color: var(--text-strong);
+        margin-bottom: 6px;
+      }
+      .step p {
+        font-size: 13px;
+        color: var(--text-secondary);
+      }
+
+      .diff {
+        border: var(--border-strong);
+        background: var(--surface-panel-soft);
+        max-width: 640px;
+      }
+      .diff-head,
+      .diff-row {
+        display: grid;
+        /* 中列固定宽:head 与 row 是独立 grid,auto 会导致列错位 */
+        grid-template-columns: 5.5em 1fr 1.5em 1fr 6em;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 16px;
+        font-family: var(--font-mono);
+        font-size: 12px;
+      }
+      .diff-head {
+        border-bottom: var(--border-hairline);
+        font-size: 9px;
+        letter-spacing: var(--ls-label);
+        color: var(--text-muted);
+      }
+      .diff-row {
+        border-bottom: 1px solid var(--surface-divider);
+        color: var(--text-secondary);
+      }
+      .diff-row:last-child {
+        border-bottom: 0;
+      }
+      .diff-row .arrow {
+        color: var(--text-disabled);
+      }
+      .diff-row .keep {
+        font-size: 9px;
+        letter-spacing: var(--ls-label);
+        color: var(--text-disabled);
+        text-align: right;
+      }
+      .diff-row.change {
+        background: var(--surface-success-soft);
+        color: var(--text-strong);
+      }
+      .diff-row.change .arrow,
+      .diff-row.change .to {
+        color: var(--accent);
+        font-weight: 700;
+      }
+      .diff-row.change .keep {
+        color: var(--accent);
+      }
+      .diff-note {
+        max-width: 640px;
+        margin-top: 14px;
+        font-family: var(--font-mono);
+        font-size: 11px;
+        letter-spacing: var(--ls-meta);
+        color: var(--text-muted);
+      }
+      .method-row {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 16px;
+        align-items: start;
+      }
+      @media (min-width: 1080px) {
+        .method-row {
+          grid-template-columns: minmax(0, 640px) minmax(0, 1fr);
+        }
+      }
+      .why-card {
+        border: var(--border-hairline);
+        background: var(--surface-panel-soft);
+        padding: 16px 18px 18px;
+        max-width: 640px;
+      }
+      .why-card i {
+        display: block;
+        font-style: normal;
+        font-family: var(--font-mono);
+        font-size: 10px;
+        letter-spacing: var(--ls-label);
+        color: var(--accent);
+        margin-bottom: 8px;
+      }
+      .why-card p {
+        font-size: 13px;
+        color: var(--text-body);
+        margin-bottom: 14px;
+      }
+      .why-card a {
+        font-family: var(--font-mono);
+        font-size: 11px;
+        letter-spacing: var(--ls-label);
+        color: var(--accent);
+        text-decoration: none;
+        transition: color var(--motion-fast) var(--motion-ease);
+      }
+      .why-card a:hover {
+        color: var(--state-primary-hover);
+        text-decoration: underline;
+      }
+
+      /* lab */
+      .lab-in {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 40px;
+        align-items: start;
+      }
+      @media (min-width: 1080px) {
+        .lab-in {
+          grid-template-columns: minmax(0, 1fr) 440px;
+          gap: 56px;
+        }
+      }
+      .lab-points {
+        display: grid;
+        gap: 14px;
+      }
+      .lab-point {
+        border: 1px solid var(--ink-line);
+        padding: 18px 20px 20px;
+        transition: border-color var(--motion-base) var(--motion-ease);
+      }
+      .lab-point:hover {
+        border-color: var(--accent-l);
+      }
+      .lab-point i {
+        display: block;
+        font-style: normal;
+        font-family: var(--font-mono);
+        font-size: 10px;
+        letter-spacing: var(--ls-label);
+        color: var(--accent-l);
+        margin-bottom: 12px;
+      }
+      .lab-point h3 {
+        font-size: 16px;
+        font-weight: 700;
+        color: var(--ink-fg);
+        margin-bottom: 6px;
+      }
+      .lab-point p {
+        font-size: 13px;
+        color: var(--ink-dim);
+      }
+      .exp {
+        background: var(--card);
+        border: var(--border-strong);
+        color: var(--text-body);
+      }
+      .exp-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 10px 14px;
+        border-bottom: var(--border-hairline);
+        font-family: var(--font-mono);
+        font-size: 9px;
+        letter-spacing: var(--ls-label);
+        color: var(--text-secondary);
+      }
+      .exp-head .exp-ctrl {
+        color: var(--accent);
+      }
+      .exp-cols {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        border-bottom: var(--border-hairline);
+      }
+      .exp-col {
+        padding: 10px 14px 12px;
+      }
+      .exp-col:first-child {
+        border-right: var(--border-hairline);
+      }
+      .exp-col i {
+        display: block;
+        font-style: normal;
+        font-family: var(--font-mono);
+        font-size: 8px;
+        letter-spacing: var(--ls-label);
+        color: var(--text-muted);
+        margin-bottom: 3px;
+      }
+      .exp-col i.cand {
+        color: var(--accent);
+      }
+      .exp-col b {
+        font-family: var(--font-mono);
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--text-strong);
+      }
+      .exp-impacts {
+        padding: 12px 14px;
+        display: grid;
+        gap: 7px;
+      }
+      .exp-row {
+        display: flex;
+        align-items: baseline;
+        gap: 10px;
+        font-family: var(--font-mono);
+        font-size: 11px;
+        color: var(--text-muted);
+      }
+      .exp-row em {
+        font-style: normal;
+        font-family: var(--font-sans);
+        font-size: 12px;
+        color: var(--text-secondary);
+        width: 4em;
+        flex: none;
+      }
+      .exp-row span {
+        flex: 1;
+      }
+      .exp-row output {
+        flex: none;
+      }
+      .exp-row.key {
+        color: var(--text-secondary);
+      }
+      .exp-row.key em,
+      .exp-row.key output {
+        color: var(--text-strong);
+        font-weight: 700;
+      }
+      .exp-hood {
+        border-top: var(--border-hairline);
+        background: var(--surface-panel-soft);
+        padding: 11px 14px 13px;
+      }
+      .exp-hood i {
+        display: block;
+        font-style: normal;
+        font-family: var(--font-mono);
+        font-size: 9px;
+        letter-spacing: var(--ls-label);
+        color: var(--accent);
+        margin-bottom: 6px;
+      }
+      .exp-hood p {
+        font-size: 12px;
+        line-height: 1.75;
+        color: var(--text-body);
+      }
+
+      /* local-first · 浅色带 */
+      #local {
+        background: var(--card);
+        border-top: var(--border-hairline);
+        border-bottom: var(--border-hairline);
+      }
+      .grid-local {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 14px;
+      }
+      @media (min-width: 800px) {
+        .grid-local {
+          grid-template-columns: repeat(2, 1fr);
+          gap: 16px;
+        }
+      }
+      .local-item {
+        background: var(--surface-panel-soft);
+        border: var(--border-hairline);
+        padding: 20px 20px 22px;
+        transition: border-color var(--motion-base) var(--motion-ease);
+      }
+      .local-item:hover {
+        border-color: var(--ink);
+      }
+      .local-item i {
+        display: block;
+        font-style: normal;
+        font-family: var(--font-mono);
+        font-size: 10px;
+        letter-spacing: var(--ls-label);
+        color: var(--accent);
+        margin-bottom: 12px;
+      }
+      .local-item h3 {
+        font-size: 16px;
+        font-weight: 700;
+        color: var(--text-strong);
+        margin-bottom: 6px;
+      }
+      .local-item p {
+        font-size: 13px;
+        color: var(--text-secondary);
+      }
+
+      /* tech strip */
+      .tech {
+        padding: 44px 0;
+        text-align: center;
+      }
+      .tech .sec-label {
+        margin-bottom: 18px;
+      }
+      .tech-tags {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 8px;
+      }
+      .tech-tags span {
+        border: var(--border-hairline);
+        background: var(--card);
+        padding: 4px 12px;
+        font-family: var(--font-mono);
+        font-size: 11px;
+        color: var(--text-secondary);
+      }
+
+      /* footer */
+      footer {
+        padding: 44px 0 52px;
+      }
+      .footer-in {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+      }
+      .footer-tag {
+        font-family: var(--font-mono);
+        font-size: 10px;
+        letter-spacing: var(--ls-label);
+        color: var(--ink-dim);
+      }
+      .footer-links {
+        display: flex;
+        gap: 24px;
+      }
+      .footer-links a {
+        font-family: var(--font-mono);
+        font-size: 11px;
+        letter-spacing: var(--ls-label);
+        color: var(--ink-dim);
+        text-decoration: none;
+        transition: color var(--motion-fast) var(--motion-ease);
+      }
+      .footer-links a:hover {
+        color: var(--ink-fg);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="dark">
+      <header>
+        <div class="wrap header-in">
+          <a class="brand" href="#top">
+            <span class="brand-mark" aria-hidden="true">P.</span>
+            <span class="brand-name">POUR.LOG</span>
+          </a>
+          <nav class="nav" aria-label="页面导航">
+            <a href="#features">功能</a>
+            <a href="#method">方法</a>
+            <a href="#lab">实验室</a>
+            <a href="#local">本地优先</a>
+            <a
+              href="https://github.com/3927o/pourlog"
+              target="_blank"
+              rel="noreferrer"
+              >GITHUB ↗</a
+            >
+            <a class="btn btn-primary" href="/">Open App</a>
+          </nav>
+        </div>
+      </header>
+
+      <div class="hero" id="top">
+        <div class="wrap hero-in">
+          <div>
+            <p class="hero-label">POUR.LOG · 手冲陪学 · LOCAL-FIRST PWA</p>
+            <h1>
+              像做实验一样冲咖啡,<br />
+              每一杯<em>只调一个变量</em>。
+            </h1>
+            <p class="hero-sub">
+              记录豆子、配方和每一杯的口感,让 AI
+              告诉你下一杯该调哪个参数、为什么这么调。一次只调一个,变好喝了才知道原因。
+            </p>
+            <div class="hero-cta">
+              <a class="btn btn-primary" href="/">▸ Open Pour.log</a>
+              <a
+                class="btn btn-ghost"
+                href="https://github.com/3927o/pourlog"
+                target="_blank"
+                rel="noreferrer"
+                >View Source ↗</a
+              >
+            </div>
+            <p class="hero-meta">
+              <span>数据只在本机</span><span>无账号</span><span>离线可用</span
+              ><span>AI 可选</span>
+            </p>
+          </div>
+
+          <!-- 设备演示 · 装饰性内容 -->
+          <div class="phone" aria-hidden="true">
+            <div class="phone-bar"><b>POUR.LOG</b><span>BREW #23</span></div>
+            <div class="phone-body">
+              <div class="p-card">
+                <p class="p-meta">BEAN · 水洗 · 浅焙</p>
+                <p class="p-title">埃塞俄比亚 · 耶加雪菲</p>
+                <div class="p-tags">
+                  <span class="p-tag">柑橘</span><span class="p-tag">茉莉</span
+                  ><span class="p-tag">红茶感</span>
+                </div>
+              </div>
+
+              <div class="spec">
+                <div><i>DOSE</i><b>15.0g</b></div>
+                <div><i>RATIO</i><b>1:15</b></div>
+                <div><i>TEMP</i><b>92°C</b></div>
+                <div><i>GRIND</i><b>中细</b></div>
+                <div><i>TIME</i><b>2'30"</b></div>
+                <div><i>POURS</i><b>3 段</b></div>
+              </div>
+
+              <div class="p-card">
+                <p class="p-label">TASTE · 六维评分 1–5</p>
+                <div class="dim">
+                  <div class="dim-row">
+                    <em>酸</em>
+                    <span class="track"
+                      ><span
+                        class="fill"
+                        style="display: block; width: 60%"
+                      ></span
+                    ></span>
+                    <output>3/5</output>
+                  </div>
+                  <div class="dim-row">
+                    <em>甜</em>
+                    <span class="track"
+                      ><span
+                        class="fill"
+                        style="display: block; width: 40%"
+                      ></span
+                    ></span>
+                    <output>2/5</output>
+                  </div>
+                  <div class="dim-row hot">
+                    <em>苦</em>
+                    <span class="track"
+                      ><span
+                        class="fill"
+                        style="display: block; width: 80%"
+                      ></span
+                    ></span>
+                    <output>4/5</output>
+                  </div>
+                  <div class="dim-row hot">
+                    <em>干净度</em>
+                    <span class="track"
+                      ><span
+                        class="fill"
+                        style="display: block; width: 40%"
+                      ></span
+                    ></span>
+                    <output>2/5</output>
+                  </div>
+                  <div class="dim-row">
+                    <em>余韵</em>
+                    <span class="track"
+                      ><span
+                        class="fill"
+                        style="display: block; width: 60%"
+                      ></span
+                    ></span>
+                    <output>3/5</output>
+                  </div>
+                  <div class="dim-row">
+                    <em>醇厚度</em>
+                    <span class="track"
+                      ><span
+                        class="fill"
+                        style="display: block; width: 60%"
+                      ></span
+                    ></span>
+                    <output>3/5</output>
+                  </div>
+                </div>
+              </div>
+
+              <div class="p-ai">
+                <p class="p-label">◇ AI 复盘 · 单变量原则</p>
+                <p>
+                  苦高、干净度低,是过萃的典型信号。下一杯<b>只把研磨调粗 2 格</b
+                  >,水温、比例、注水都不要动。
+                </p>
+                <p class="p-go">▸ 去实验室验证这条建议</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <section id="features">
+      <div class="wrap">
+        <p class="sec-label">FEATURES · 功能</p>
+        <h2 class="sec-title">记豆子、记配方、记每一杯。</h2>
+        <p class="sec-sub">
+          每篇日记都存了当时用的配方和参数,过阵子回头看,还能看明白那杯是怎么冲的。
+        </p>
+        <div class="grid-feat">
+          <div class="feat">
+            <p class="feat-no"><span>01</span><span>BEANS</span></p>
+            <h3>豆样本库</h3>
+            <p>
+              一支豆子一个档案:烘焙度、处理法、风味标签,还有它的冲煮历史和最好的一杯。
+            </p>
+            <p class="mono-line">耶加雪菲 · 水洗 · <b>BEST #19</b></p>
+          </div>
+          <div class="feat">
+            <p class="feat-no"><span>02</span><span>RECIPES</span></p>
+            <h3>配方库</h3>
+            <p>
+              自带几个常用配方,也可以自己建。注水分几段、每段多少克都写清楚,冲的时候照着来就行。
+            </p>
+            <p class="mono-line">闷蒸 30g/30s → 二段 120g → 三段 225g</p>
+          </div>
+          <div class="feat">
+            <p class="feat-no"><span>03</span><span>JOURNAL</span></p>
+            <h3>冲煮日记</h3>
+            <p>
+              每冲一杯,自动存下当时的配方和参数。口感打个分,想多写两句就写两句。
+            </p>
+            <p class="mono-line">
+              酸 3 · 甜 2 · <b>苦 4</b> · 干净 2 · 余韵 3 · 醇厚 3
+            </p>
+          </div>
+          <div class="feat">
+            <p class="feat-no"><span>04</span><span>AI REVIEW</span></p>
+            <h3>AI 复盘</h3>
+            <p>
+              看完你的评分,给一条建议:下一杯调哪个参数、怎么调、为什么。只给一条,不会让你全推倒重来。
+            </p>
+            <p class="mono-line">SUGGEST · <b>研磨 +2 格</b> · 其余不动</p>
+          </div>
+          <div class="feat">
+            <p class="feat-no"><span>05</span><span>SIMULATOR</span></p>
+            <h3>冲煮实验室</h3>
+            <p>
+              一个离线模拟器:拖一下研磨或水温,马上看到口感大概会怎么变,旁边还有原理解释。
+            </p>
+            <p class="mono-line">研磨 +2 → 苦 <b>−0.8</b> · 干净 <b>+0.6</b></p>
+          </div>
+          <div class="feat">
+            <p class="feat-no"><span>06</span><span>LOCAL-FIRST</span></p>
+            <h3>本地优先 PWA</h3>
+            <p>
+              数据都存在你自己的设备里,能装到主屏幕,断网也能用。不用注册账号。
+            </p>
+            <p class="mono-line">Dexie · IndexedDB · <b>0 CLOUD</b></p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="method">
+      <div class="wrap">
+        <p class="sec-label">METHOD · 单变量原则</p>
+        <h2 class="sec-title">变量一多,你就不知道是什么起了作用。</h2>
+        <p class="sec-sub">
+          研磨、水温、比例、注水,这些参数互相影响。一次改两三个,就算变好喝了,也不知道该谢谁。所以
+          POUR.LOG 每次只让你改一个。
+        </p>
+        <div class="steps">
+          <div class="step">
+            <h3>冲一杯,记下来</h3>
+            <p>照着配方冲,参数和过程会自动记进日记,不用一边冲一边记。</p>
+          </div>
+          <div class="step">
+            <h3>给口感打分</h3>
+            <p>
+              酸、甜、苦、干净度、余韵、醇厚度,六项各打 1 到 5 分,一分钟的事。
+            </p>
+          </div>
+          <div class="step">
+            <h3>只调一个变量</h3>
+            <p>
+              AI
+              从评分里挑出最要紧的那个参数,告诉你怎么调、为什么。下一杯就只动它。
+            </p>
+          </div>
+        </div>
+
+        <div class="method-row">
+          <div class="diff" role="table" aria-label="上一杯与下一杯的参数对比">
+            <div class="diff-head" role="row">
+              <span role="columnheader">PARAM</span>
+              <span role="columnheader">BREW #23</span>
+              <span aria-hidden="true"></span>
+              <span role="columnheader">BREW #24</span>
+              <span aria-hidden="true"></span>
+            </div>
+            <div class="diff-row change" role="row">
+              <span role="cell">研磨</span>
+              <span role="cell">中细</span>
+              <span class="arrow" aria-hidden="true">→</span>
+              <span class="to" role="cell">中</span>
+              <span class="keep" role="cell">CHANGE</span>
+            </div>
+            <div class="diff-row" role="row">
+              <span role="cell">水温</span>
+              <span role="cell">92°C</span>
+              <span class="arrow" aria-hidden="true">→</span>
+              <span role="cell">92°C</span>
+              <span class="keep" role="cell">KEEP</span>
+            </div>
+            <div class="diff-row" role="row">
+              <span role="cell">粉水比</span>
+              <span role="cell">1:15</span>
+              <span class="arrow" aria-hidden="true">→</span>
+              <span role="cell">1:15</span>
+              <span class="keep" role="cell">KEEP</span>
+            </div>
+            <div class="diff-row" role="row">
+              <span role="cell">注水</span>
+              <span role="cell">3 段</span>
+              <span class="arrow" aria-hidden="true">→</span>
+              <span role="cell">3 段</span>
+              <span class="keep" role="cell">KEEP</span>
+            </div>
+          </div>
+
+          <div class="why-card">
+            <i>AI REVIEW · 为什么这么改</i>
+            <p>
+              苦 4 分、干净度只有 2
+              分,多半是过萃了。研磨太细时细粉多,后段容易萃过头,调粗一点会均匀些。
+            </p>
+            <a href="#lab">▸ 去实验室验证这条建议</a>
+          </div>
+        </div>
+
+        <p class="diff-note">▸ 下一杯要是更好喝,你知道是研磨的功劳。</p>
+      </div>
+    </section>
+
+    <div class="dark" id="lab">
+      <section>
+        <div class="wrap">
+          <p class="sec-label">LAB · 冲煮实验室</p>
+          <h2 class="sec-title">改个参数会怎样?先在实验室里试试。</h2>
+          <p class="sec-sub">
+            一个不用磨豆、不用烧水的模拟器。调研磨、水温、比例或注水手法,看六项口感大概会怎么变。学手冲,先在这里练手感。
+          </p>
+          <div class="lab-in">
+            <div class="lab-points">
+              <div class="lab-point">
+                <i>01 · FROM SUGGESTION</i>
+                <h3>带着建议进来</h3>
+                <p>
+                  日记里的 AI
+                  建议旁边有个「去实验室验证」。点进来,左边是你刚冲的那杯,右边是按建议改了参数的下一杯,变化一目了然。
+                </p>
+              </div>
+              <div class="lab-point">
+                <i>02 · UNDER THE HOOD</i>
+                <h3>不光给结果,还讲原理</h3>
+                <p>
+                  每次变化下面都有一块「掀开引擎盖」,讲清楚为什么磨粗了苦味会降、水温高了酸会怎样。看多了,不用
+                  AI 你自己也会调。
+                </p>
+              </div>
+              <div class="lab-point">
+                <i>03 · ZERO WASTE</i>
+                <h3>试错不费豆子</h3>
+                <p>
+                  想怎么折腾都行,反正不用磨豆不用烧水。拿不准的调整,先在这里跑一遍再上手冲。
+                </p>
+              </div>
+            </div>
+
+            <!-- 对照实验演示 · 装饰性内容 -->
+            <div class="exp" aria-hidden="true">
+              <div class="exp-head">
+                <span>EXPERIMENT · 单变量对照</span>
+                <span class="exp-ctrl">CONTROL · GRIND</span>
+              </div>
+              <div class="exp-cols">
+                <div class="exp-col">
+                  <i>BASELINE · #23</i>
+                  <b>研磨 中细</b>
+                </div>
+                <div class="exp-col">
+                  <i class="cand">CANDIDATE · #24</i>
+                  <b>研磨 中</b>
+                </div>
+              </div>
+              <div class="exp-impacts">
+                <div class="exp-row">
+                  <em>酸</em><span>3.0 → 3.2</span><output>+0.2</output>
+                </div>
+                <div class="exp-row">
+                  <em>甜</em><span>2.0 → 2.1</span><output>+0.1</output>
+                </div>
+                <div class="exp-row key">
+                  <em>苦</em><span>4.0 → 3.2</span><output>−0.8</output>
+                </div>
+                <div class="exp-row key">
+                  <em>干净度</em><span>2.0 → 2.6</span><output>+0.6</output>
+                </div>
+                <div class="exp-row">
+                  <em>余韵</em><span>3.0 → 3.0</span><output>±0</output>
+                </div>
+                <div class="exp-row">
+                  <em>醇厚度</em><span>3.0 → 2.8</span><output>−0.2</output>
+                </div>
+              </div>
+              <div class="exp-hood">
+                <i>掀开引擎盖 · 为什么会这样</i>
+                <p>
+                  磨粗之后颗粒表面积变小、细粉变少,后半段不容易萃过头,苦味降下来,干净度也回来了。
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <section id="local">
+      <div class="wrap">
+        <p class="sec-label">LOCAL-FIRST · 本地优先</p>
+        <h2 class="sec-title">数据在你设备上,不经过任何人的服务器。</h2>
+        <p class="sec-sub">POUR.LOG 装好就能用,不用注册,不用登录。</p>
+        <div class="grid-local">
+          <div class="local-item">
+            <i>01 · STORAGE</i>
+            <h3>数据不出设备</h3>
+            <p>
+              豆子、配方、日记,全都存在浏览器本地的 IndexedDB
+              里。没有账号,也没有云端。
+            </p>
+          </div>
+          <div class="local-item">
+            <i>02 · OFFLINE</i>
+            <h3>断网照样冲</h3>
+            <p>装到主屏幕之后,记录、打分、查历史、跑模拟器,都不需要网。</p>
+          </div>
+          <div class="local-item">
+            <i>03 · BYO-AI</i>
+            <h3>AI 自己配</h3>
+            <p>
+              用的是 OpenAI
+              兼容接口,地址、Key、模型都在设置页自己填。请求直接从你的设备发给你选的服务商。
+            </p>
+          </div>
+          <div class="local-item">
+            <i>04 · FALLBACK</i>
+            <h3>没有 AI 也能用</h3>
+            <p>
+              不配 AI,或者接口临时挂了,内置规则照样给建议,同样一次只调一个参数。
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="tech">
+      <div class="wrap">
+        <p class="sec-label">BUILT WITH</p>
+        <div class="tech-tags">
+          <span>React 19</span><span>TypeScript</span><span>Vite</span
+          ><span>React Router</span><span>Dexie · IndexedDB</span
+          ><span>Zod</span><span>vite-plugin-pwa</span
+          ><span>CSS Design Tokens</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="dark">
+      <footer>
+        <div class="wrap footer-in">
+          <a class="brand" href="#top">
+            <span class="brand-mark" aria-hidden="true">P.</span>
+            <span class="brand-name">POUR.LOG</span>
+          </a>
+          <p class="footer-tag">手冲陪学 — 像做实验一样冲咖啡。</p>
+          <div class="footer-links">
+            <a
+              href="https://github.com/3927o/pourlog"
+              target="_blank"
+              rel="noreferrer"
+              >GITHUB ↗</a
+            >
+            <a href="/">OPEN APP →</a>
+          </div>
+        </div>
+      </footer>
+    </div>
+  </body>
+</html>

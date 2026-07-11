@@ -3,10 +3,22 @@ import react from "@vitejs/plugin-react";
 import { VitePWA } from "vite-plugin-pwa";
 
 export default defineConfig({
+  build: {
+    rollupOptions: {
+      input: {
+        main: "index.html",
+        landing: "landing.html",
+      },
+    },
+  },
   plugins: [
     react(),
     VitePWA({
       registerType: "autoUpdate",
+      workbox: {
+        // landing.html 是独立静态页，SPA 导航回退不应劫持它
+        navigateFallbackDenylist: [/^\/landing/],
+      },
       manifest: {
         name: "手冲陪学 · POUR.LOG",
         short_name: "POUR.LOG",
