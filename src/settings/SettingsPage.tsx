@@ -2,6 +2,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLiveQuery } from "dexie-react-hooks";
 import { callAI } from "../ai";
+import { DEFAULT_AI_SETTINGS } from "../aiConfig";
 import { db } from "../db";
 import type { AppSettings } from "../models";
 import { Back, Field, Loading, NotFound, Page } from "../ui";
@@ -9,12 +10,9 @@ import { Back, Field, Loading, NotFound, Page } from "../ui";
 export function SettingsPage() {
   const settings = useLiveQuery(() => db.settings.get("main"), [], null);
   const navigate = useNavigate();
-  const [form, setForm] = useState<AppSettings>({
-    id: "main",
-    apiBase: "",
-    apiKey: "",
-    model: "gpt-4o-mini",
-  });
+  const [form, setForm] = useState<AppSettings>(() => ({
+    ...DEFAULT_AI_SETTINGS,
+  }));
   const [message, setMessage] = useState("");
   const [testing, setTesting] = useState(false);
 
@@ -36,7 +34,7 @@ export function SettingsPage() {
       ...form,
       apiBase: form.apiBase.trim().replace(/\/+$/, ""),
       apiKey: form.apiKey.trim(),
-      model: form.model.trim() || "gpt-4o-mini",
+      model: form.model.trim() || DEFAULT_AI_SETTINGS.model,
     });
     navigate("/beans");
   }
@@ -89,7 +87,7 @@ export function SettingsPage() {
         <Field
           label="MODEL"
           value={form.model}
-          placeholder="gpt-4o-mini"
+          placeholder={DEFAULT_AI_SETTINGS.model}
           onChange={(value) => setForm({ ...form, model: value })}
         />
         <button

@@ -1,4 +1,5 @@
 import Dexie, { type EntityTable, type Transaction } from "dexie";
+import { DEFAULT_AI_SETTINGS, isLegacyEmptyAISettings } from "./aiConfig";
 import type {
   AiSuggestion,
   AppSettings,
@@ -408,13 +409,6 @@ const beans: Bean[] = [
   },
 ];
 
-const defaultSettings: AppSettings = {
-  id: "main",
-  apiBase: "",
-  apiKey: "",
-  model: "gpt-4o-mini",
-};
-
 function snapshot(recipe: SavedRecipe): RecipeSnapshot {
   return {
     name: recipe.name,
@@ -435,10 +429,16 @@ export async function seedDatabase() {
       db.journals.count(),
       db.settings.get("main"),
     ]);
-  if (seeded) return;
+  if (seeded) {
+    if (settings && isLegacyEmptyAISettings(settings))
+      await db.settings.put({ ...DEFAULT_AI_SETTINGS });
+    return;
+  }
   if (beanCount || recipeCount || journalCount || settings) {
     await db.transaction("rw", db.settings, db.meta, async () => {
-      if (!settings) await db.settings.add(defaultSettings);
+      if (!settings) await db.settings.add({ ...DEFAULT_AI_SETTINGS });
+      else if (isLegacyEmptyAISettings(settings))
+        await db.settings.put({ ...DEFAULT_AI_SETTINGS });
       await db.meta.put({ id: "seeded", completedAt: Date.now() });
     });
     return;
@@ -488,7 +488,7 @@ export async function seedDatabase() {
         },
       ];
       await db.journals.bulkAdd(journalRows);
-      await db.settings.add(defaultSettings);
+      await db.settings.add({ ...DEFAULT_AI_SETTINGS });
       await db.meta.add({ id: "seeded", completedAt: now });
     },
   );

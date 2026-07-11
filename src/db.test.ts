@@ -1,5 +1,6 @@
 import { afterAll, beforeEach, describe, expect, it } from "vitest";
 import Dexie from "dexie";
+import { DEFAULT_AI_SETTINGS } from "./aiConfig";
 import {
   db,
   deleteBean,
@@ -79,6 +80,20 @@ describe("database initialization", () => {
     expect(await db.beans.toArray()).toHaveLength(1);
     expect(await db.recipes.count()).toBe(0);
     expect(await db.settings.get("main")).toBeDefined();
+  });
+
+  it("upgrades legacy empty AI settings to the bundled default", async () => {
+    await seedDatabase();
+    await db.settings.put({
+      id: "main",
+      apiBase: "",
+      apiKey: "",
+      model: "gpt-4o-mini",
+    });
+
+    await seedDatabase();
+
+    expect(await db.settings.get("main")).toEqual(DEFAULT_AI_SETTINGS);
   });
 
   it("allocates a number above the highest existing bean number", async () => {

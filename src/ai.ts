@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { DEFAULT_AI_SETTINGS } from "./aiConfig";
 import type {
   AppSettings,
   Bean,
@@ -51,7 +52,7 @@ export async function callAI(
       Authorization: `Bearer ${settings.apiKey}`,
     },
     body: JSON.stringify({
-      model: settings.model || "gpt-4o-mini",
+      model: settings.model || DEFAULT_AI_SETTINGS.model,
       temperature: 0.5,
       messages,
     }),
