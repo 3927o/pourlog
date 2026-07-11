@@ -4,6 +4,7 @@ import { BrowserRouter } from "react-router-dom";
 import { App } from "./App";
 import "./styles/tokens.css";
 import "./styles/app.css";
+import "./simulator/simulator.css";
 import { seedDatabase } from "./db";
 
 async function bootstrap() {

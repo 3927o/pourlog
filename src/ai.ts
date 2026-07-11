@@ -146,6 +146,18 @@ export function localAnalysis(recipe: Recipe, d: BrewDimensions) {
 }
 
 export function localSuggestion(bean: Bean, method: BrewMethod) {
+  if (method === "冷萃") {
+    return {
+      ratio: "1:12",
+      grind: "粗研磨",
+      temp: "冷水 / 室温水",
+      time: "8–12h",
+      steps: [{ t: "0:00", water: "按 1:12 一次注满", note: "搅匀后冷藏浸泡" }],
+      why: `${bean.roast}${bean.process}豆使用粗研磨冷藏浸泡，减少苦涩并保留${bean.flavors[0] || "主要风味"}。`,
+      source: "local" as const,
+    };
+  }
+
   const temp =
     bean.roast === "浅烘" ? "92°C" : bean.roast === "深烘" ? "86°C" : "89°C";
   const grind =
@@ -155,13 +167,18 @@ export function localSuggestion(bean: Bean, method: BrewMethod) {
         ? "中细偏粗"
         : "中细";
   return {
-    ratio: method === "冷萃" ? "1:12" : "1:16",
+    ratio: method === "冰冲" ? "1:15" : "1:16",
     grind,
     temp,
-    time: method === "冷萃" ? "8–12h" : method === "冰冲" ? "2:00" : "2:30",
+    time: method === "冰冲" ? "2:00" : "2:30",
     steps:
-      method === "冷萃"
-        ? [{ t: "0:00", water: "一次注满", note: "冷藏浸泡" }]
+      method === "冰冲"
+        ? [
+            { t: "0:00", water: "分享壶放 80g 冰", note: "咖啡液直接落冰" },
+            { t: "0:00", water: "0→36g", note: "闷蒸" },
+            { t: "0:30", water: "36→100g", note: "第二段绕圈" },
+            { t: "1:05", water: "100→160g", note: "收尾后摇匀" },
+          ]
         : [
             { t: "0:00", water: "0→36g", note: "闷蒸" },
             { t: "0:30", water: "36→150g", note: "第二段绕圈" },

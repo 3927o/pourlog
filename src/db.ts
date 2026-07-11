@@ -1,11 +1,17 @@
 import Dexie, { type EntityTable } from "dexie";
 import type { AppSettings, Bean, Journal, Recipe } from "./models";
 
+interface MetaRecord {
+  id: "seeded";
+  completedAt: number;
+}
+
 class PourlogDB extends Dexie {
   beans!: EntityTable<Bean, "id">;
   recipes!: EntityTable<Recipe, "id">;
   journals!: EntityTable<Journal, "id">;
   settings!: EntityTable<AppSettings, "id">;
+  meta!: EntityTable<MetaRecord, "id">;
 
   constructor() {
     super("pourlog");
@@ -14,6 +20,13 @@ class PourlogDB extends Dexie {
       recipes: "id, preset, method",
       journals: "id, beanId, recipeId, createdAt",
       settings: "id",
+    });
+    this.version(2).stores({
+      beans: "id, no, name",
+      recipes: "id, preset, method",
+      journals: "id, beanId, recipeId, createdAt",
+      settings: "id",
+      meta: "id",
     });
   }
 }
@@ -116,100 +129,124 @@ const beans: Bean[] = [
   },
 ];
 
+const defaultSettings: AppSettings = {
+  id: "main",
+  apiBase: "",
+  apiKey: "",
+  model: "gpt-4o-mini",
+};
+
 export async function seedDatabase() {
-  const [beanCount, recipeCount, journalCount, settings] = await Promise.all([
-    db.beans.count(),
-    db.recipes.count(),
-    db.journals.count(),
-    db.settings.get("main"),
-  ]);
-  if (beanCount && recipeCount && journalCount && settings) return;
+  const [seeded, beanCount, recipeCount, journalCount, settings] =
+    await Promise.all([
+      db.meta.get("seeded"),
+      db.beans.count(),
+      db.recipes.count(),
+      db.journals.count(),
+      db.settings.get("main"),
+    ]);
+  if (seeded) return;
+
+  const hasExistingData =
+    beanCount > 0 || recipeCount > 0 || journalCount > 0 || Boolean(settings);
+  if (hasExistingData) {
+    await db.transaction("rw", db.settings, db.meta, async () => {
+      if (!settings) await db.settings.add(defaultSettings);
+      await db.meta.put({ id: "seeded", completedAt: Date.now() });
+    });
+    return;
+  }
+
   await db.transaction(
     "rw",
     db.beans,
     db.recipes,
     db.journals,
     db.settings,
+    db.meta,
     async () => {
-      if (!recipeCount) await db.recipes.bulkAdd(recipes);
-      if (!beanCount) await db.beans.bulkAdd(beans);
+      await db.recipes.bulkAdd(recipes);
+      await db.beans.bulkAdd(beans);
       const now = Date.now();
-      if (!journalCount)
-        await db.journals.bulkAdd([
-          {
-            id: "j1",
-            beanId: "yr",
-            recipeId: "mine",
-            recipeSnapshot: recipes[3]!,
-            createdAt: now - 6 * 86400000,
-            dims: {
-              acid: 4,
-              sweet: 4,
-              bitter: 2,
-              clean: 5,
-              finish: 4,
-              body: 3,
-            },
-            notes: "花香很清楚，尾段回甘明显。",
+      await db.journals.bulkAdd([
+        {
+          id: "j1",
+          beanId: "yr",
+          recipeId: "mine",
+          recipeSnapshot: recipes[3]!,
+          createdAt: now - 6 * 86400000,
+          dims: {
+            acid: 4,
+            sweet: 4,
+            bitter: 2,
+            clean: 5,
+            finish: 4,
+            body: 3,
           },
-          {
-            id: "j2",
-            beanId: "yr",
-            recipeId: "v60",
-            recipeSnapshot: recipes[0]!,
-            createdAt: now - 10 * 86400000,
-            dims: {
-              acid: 5,
-              sweet: 3,
-              bitter: 2,
-              clean: 4,
-              finish: 3,
-              body: 3,
-            },
-            notes: "酸偏尖，可以再柔和些。",
+          notes: "花香很清楚，尾段回甘明显。",
+        },
+        {
+          id: "j2",
+          beanId: "yr",
+          recipeId: "v60",
+          recipeSnapshot: recipes[0]!,
+          createdAt: now - 10 * 86400000,
+          dims: {
+            acid: 5,
+            sweet: 3,
+            bitter: 2,
+            clean: 4,
+            finish: 3,
+            body: 3,
           },
-          {
-            id: "j3",
-            beanId: "hl",
-            recipeId: "v60",
-            recipeSnapshot: recipes[0]!,
-            createdAt: now - 11 * 86400000,
-            dims: {
-              acid: 3,
-              sweet: 4,
-              bitter: 3,
-              clean: 4,
-              finish: 3,
-              body: 4,
-            },
-            notes: "",
+          notes: "酸偏尖，可以再柔和些。",
+        },
+        {
+          id: "j3",
+          beanId: "hl",
+          recipeId: "v60",
+          recipeSnapshot: recipes[0]!,
+          createdAt: now - 11 * 86400000,
+          dims: {
+            acid: 3,
+            sweet: 4,
+            bitter: 3,
+            clean: 4,
+            finish: 3,
+            body: 4,
           },
-          {
-            id: "j4",
-            beanId: "gs",
-            recipeId: "one",
-            recipeSnapshot: recipes[1]!,
-            createdAt: now - 5 * 86400000,
-            dims: {
-              acid: 4,
-              sweet: 5,
-              bitter: 1,
-              clean: 4,
-              finish: 5,
-              body: 3,
-            },
-            notes: "花果香炸裂。",
+          notes: "",
+        },
+        {
+          id: "j4",
+          beanId: "gs",
+          recipeId: "one",
+          recipeSnapshot: recipes[1]!,
+          createdAt: now - 5 * 86400000,
+          dims: {
+            acid: 4,
+            sweet: 5,
+            bitter: 1,
+            clean: 4,
+            finish: 5,
+            body: 3,
           },
-        ]);
-      if (!settings)
-        await db.settings.add({
-          id: "main",
-          apiBase: "",
-          apiKey: "",
-          model: "gpt-4o-mini",
-        });
+          notes: "花果香炸裂。",
+        },
+      ]);
+      await db.settings.add(defaultSettings);
+      await db.meta.add({ id: "seeded", completedAt: now });
     },
   );
+}
+
+export async function nextBeanNumber() {
+  const beans = await db.beans.toArray();
+  const highest = beans.reduce(
+    (max, bean) => Math.max(max, Number.parseInt(bean.no, 10) || 0),
+    0,
+  );
+  return String(highest + 1).padStart(2, "0");
 }
 
 export const uid = () => Math.random().toString(36).slice(2, 10);

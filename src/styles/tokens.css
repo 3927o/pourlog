@@ -9,6 +9,9 @@
   --card: #f6f8f3; /* 卡片 / 输入框底 */
   --border: #d5dbcf; /* 描边 / 分隔 / 网格 */
   --hot: #c15a3c; /* 过萃 / 删除 / 错误 */
+  --flavor-acid: #c06a42;
+  --flavor-sweet: #b68b2f;
+  --flavor-bitter: #6e5140;
 
   /* text grays */
   --text-strong: #2a322a;
