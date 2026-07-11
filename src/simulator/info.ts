@@ -38,16 +38,15 @@ export const simulatorInfo: Record<InfoKey, InfoEntry> = {
   },
   temp: {
     title: "水温",
-    touches: ["萃取速率", "苦味选择性", "浆温下滑"],
+    touches: ["萃取速率", "萃取完整度", "浆温下滑"],
     sections: [
       {
         title: "速度与温度",
         body: "温度越高，扩散和溶解越快。模型使用随时间下滑的浆温，而不只看壶温。",
       },
       {
-        title: "萃出什么",
-        body: "同一萃取率下，更高的有效温度也会提高苦味物质的选择性。",
-        tone: "warn",
+        title: "温度不是苦味开关",
+        body: "高温主要让萃取推进得更快；苦味通常来自最终萃取偏高，而不是温度本身直接变苦。",
       },
     ],
     takeaway: "怕苦又想提高萃取，可以先改善手法，把温度留在较低位置。",
@@ -138,7 +137,7 @@ export const simulatorInfo: Record<InfoKey, InfoEntry> = {
     sections: [
       {
         title: "中心定点",
-        body: "水集中穿过中间，慢角落分不到足够水，整杯容易欠萃且不均。",
+        body: "长时间冲击同一点会增加局部通道风险，但温和的中心注水本身并不等于冲煮失败。",
         tone: "warn",
       },
       {
@@ -150,7 +149,7 @@ export const simulatorInfo: Record<InfoKey, InfoEntry> = {
     takeaway: "小圈覆盖到粉面边缘但不要碰滤纸，是更稳定的空间分配。",
   },
   flow: {
-    title: "水流强度",
+    title: "水流扰动",
     touches: ["扰动", "挖深通道", "细粉迁移"],
     sections: [
       {
@@ -164,6 +163,7 @@ export const simulatorInfo: Record<InfoKey, InfoEntry> = {
       },
     ],
     takeaway: "中等通常是甜点位；没有闷蒸或磨得很细时更要收着冲。",
+    caveat: "当前滑块表示水流带给粉床的相对动能，不是精确的克/秒流速。",
   },
   stir: {
     title: "搅拌时机",

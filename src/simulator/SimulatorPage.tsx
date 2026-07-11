@@ -214,7 +214,7 @@ function EngineSummary({ result }: { result: TasteResult }) {
         <em>{extractionZone}</em>
       </div>
       <div>
-        <small>均匀度</small>
+        <small>均匀度指数</small>
         <strong>{Math.round(result.uni)}</strong>
         <em>{uniformityZone}</em>
       </div>
@@ -399,7 +399,7 @@ export function SimulatorPage() {
       <h2>{cup.headline}</h2>
       <p>{tastingNote(result)}</p>
       <div className="sim-uniformity">
-        <span>萃取均匀度</span>
+        <span>萃取均匀度指数</span>
         <i>
           <b style={{ width: `${result.uni}%` }} />
         </i>
@@ -737,7 +737,7 @@ export function SimulatorPage() {
             />
             <label>
               <span>
-                水流强度 <InfoButton info="flow" onOpen={setInfoKey} />
+                水流扰动 <InfoButton info="flow" onOpen={setInfoKey} />
               </span>
             </label>
             <Segment

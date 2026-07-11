@@ -119,14 +119,10 @@ const x = (value: number) =>
 const y = (value: number) =>
   plot.y1 - (clamp(value) / 100) * (plot.y1 - plot.y0);
 
-function curvePath(
-  key: "acid" | "sweet" | "bitter",
-  state: SimulatorState,
-  temperature: number,
-) {
+function curvePath(key: "acid" | "sweet" | "bitter", state: SimulatorState) {
   return Array.from({ length: 61 }, (_, index) => {
     const extraction = plot.min + (index / 60) * (plot.max - plot.min);
-    const flavor = flavorAtEY(extraction, state, temperature);
+    const flavor = flavorAtEY(extraction, state);
     return `${index === 0 ? "M" : "L"}${x(extraction).toFixed(1)} ${y(flavor[key]).toFixed(1)}`;
   }).join(" ");
 }
@@ -160,7 +156,7 @@ export function ExtractionChart({
     ),
     `L ${x(plot.max)} ${plot.y1} Z`,
   ].join(" ");
-  const currentFlavor = flavorAtEY(result.ey, state, result.Teff);
+  const currentFlavor = flavorAtEY(result.ey, state);
 
   return (
     <svg
@@ -213,22 +209,13 @@ export function ExtractionChart({
           y2={plot.y1}
         />
       ))}
-      <path
-        className="sim-chart-curve acid"
-        d={curvePath("acid", state, result.Teff)}
-      />
-      <path
-        className="sim-chart-curve sweet"
-        d={curvePath("sweet", state, result.Teff)}
-      />
-      <path
-        className="sim-chart-curve bitter"
-        d={curvePath("bitter", state, result.Teff)}
-      />
+      <path className="sim-chart-curve acid" d={curvePath("acid", state)} />
+      <path className="sim-chart-curve sweet" d={curvePath("sweet", state)} />
+      <path className="sim-chart-curve bitter" d={curvePath("bitter", state)} />
       <text
         className="sim-chart-curve-label acid"
         x={x(14.6)}
-        y={y(flavorAtEY(14.6, state, result.Teff).acid) - 7}
+        y={y(flavorAtEY(14.6, state).acid) - 7}
       >
         酸
       </text>
@@ -236,7 +223,7 @@ export function ExtractionChart({
         className="sim-chart-curve-label sweet"
         textAnchor="middle"
         x={x(20)}
-        y={y(flavorAtEY(20, state, result.Teff).sweet) - 7}
+        y={y(flavorAtEY(20, state).sweet) - 7}
       >
         甜
       </text>
@@ -244,7 +231,7 @@ export function ExtractionChart({
         className="sim-chart-curve-label bitter"
         textAnchor="end"
         x={x(25.6)}
-        y={y(flavorAtEY(25.6, state, result.Teff).bitter) - 7}
+        y={y(flavorAtEY(25.6, state).bitter) - 7}
       >
         苦
       </text>

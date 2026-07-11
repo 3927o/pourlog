@@ -147,7 +147,7 @@ const K = {
   tail: 18,
   clog: 1.7,
   drift: 2,
-  tempSens: 0.042,
+  tempSens: 0.017,
   bloomCool: 2.2,
   aF: 0.105,
   aS: 0.095,
@@ -170,14 +170,14 @@ const K = {
   stirDryFix: 0.62,
   warp: 0.55,
   crash: 0.09,
-  dig: 0.13,
+  dig: 0.08,
   relevel: 0.05,
   settle: 0.02,
   sigma0: 0.3,
   uniTau: 3.6,
   shareRef: 0.498,
-  acidTilt: 320,
-  sweetTilt: 150,
+  acidTilt: 105,
+  sweetTilt: 55,
   mfAstr: 24,
   bypMud: 60,
 };
@@ -213,14 +213,14 @@ export const profileShares: Record<Profile, Record<1 | 3 | 5, number[]>> = {
 
 const STYLE: Record<PourStyle, { dist: number[]; bypass: number; dC: number }> =
   {
-    center: { dist: [0.5, 0.42, 0.08], bypass: 0.01, dC: 0.05 },
+    center: { dist: [0.265, 0.525, 0.21], bypass: 0.01, dC: 0.004 },
     spiral: { dist: [0.228, 0.555, 0.217], bypass: 0.02, dC: 0 },
-    edge: { dist: [0.27, 0.49, 0.24], bypass: 0.13, dC: 0.03 },
+    edge: { dist: [0.24, 0.52, 0.24], bypass: 0.09, dC: 0.015 },
   };
 const FLOW: Record<Flow, { a: number; byp: number }> = {
-  gentle: { a: 0.45, byp: 0 },
+  gentle: { a: 0.65, byp: 0 },
   medium: { a: 1, byp: 0 },
-  aggr: { a: 1.9, byp: 0.03 },
+  aggr: { a: 1.5, byp: 0.015 },
 };
 const ROAST: Record<
   Roast,
@@ -233,13 +233,13 @@ const ROAST: Record<
     body: number;
   }
 > = {
-  light: { rate: 0.85, acid: 28, sweet: 0, bitBase: -8, bitThr: 19.2, body: 0 },
-  medium: { rate: 1, acid: 0, sweet: 10, bitBase: 3, bitThr: 18.4, body: 12 },
-  dark: { rate: 1.18, acid: -22, sweet: 5, bitBase: 20, bitThr: 17, body: 26 },
+  light: { rate: 0.9, acid: 16, sweet: 0, bitBase: 0, bitThr: 20, body: -4 },
+  medium: { rate: 1, acid: 0, sweet: 6, bitBase: 4, bitThr: 19, body: 8 },
+  dark: { rate: 1.1, acid: -14, sweet: 2, bitBase: 16, bitThr: 17.8, body: 18 },
 };
 const PROC: Record<Process, { acid: number; sweet: number; body: number }> = {
-  washed: { acid: 8, sweet: 0, body: 0 },
-  natural: { acid: -4, sweet: 9, body: 16 },
+  washed: { acid: 4, sweet: 0, body: 0 },
+  natural: { acid: -3, sweet: 6, body: 10 },
 };
 
 export const clamp = (value: number, min = 0, max = 100) =>
@@ -251,7 +251,8 @@ export function simulate(state: SimulatorState): SimulationResult {
   const n = pourCounts[state.pours];
   const profile = profileShares[n === 1 ? "even" : state.profile][n];
   const bloomSec = bloomSeconds[state.bloom];
-  const waterRatio = Math.max(6, state.ratio / 10 - (bloomSec > 0 ? 3 : 0));
+  const rawWaterRatio = Math.max(6, state.ratio / 10 - (bloomSec > 0 ? 3 : 0));
+  const waterRatio = 12 + (rawWaterRatio - 12) * 0.65;
   let channeling =
     state.bloom === "none"
       ? K.c0none
@@ -266,7 +267,7 @@ export function simulate(state: SimulatorState): SimulationResult {
   const permeability = 1.65 - 1.15 * g;
   const fast = [0, 0, 0];
   const slow = [0, 0, 0];
-  const rate = ROAST[state.roast].rate * (0.88 + 0.3 * (state.minerals / 100));
+  const rate = ROAST[state.roast].rate * (0.87 + 0.06 * (state.minerals / 100));
   const grindRate = K.kGlo + K.kGhi * g;
   const slurryTemp = (time: number) =>
     Math.max(
@@ -423,34 +424,27 @@ export function simulate(state: SimulatorState): SimulationResult {
 export function flavorAtEY(
   extraction: number,
   state: SimulatorState,
-  effectiveTemperature = state.temp,
 ): FlavorResult {
   const roast = ROAST[state.roast];
   const process = PROC[state.process];
   const minerals = state.minerals / 100;
-  const temperatureShift = (effectiveTemperature - 90) / 6;
   return {
     acid: clamp(
-      72 -
-        (extraction - 15) * 7 +
-        Math.max(0, 17.2 - extraction) * 5 +
+      60 -
+        (extraction - 17) * 5 +
+        Math.max(0, 17 - extraction) * 2 +
         roast.acid +
         process.acid -
-        minerals * 14 -
-        temperatureShift * 5,
+        minerals * 5,
     ),
     sweet: clamp(
-      80 * Math.exp(-Math.pow(extraction - 20, 2) / (2 * 3.1 * 3.1)) +
+      82 * Math.exp(-Math.pow(extraction - 20, 2) / (2 * 3.4 * 3.4)) +
         roast.sweet +
         process.sweet,
     ),
-    bitter: clamp(
-      Math.max(0, (extraction - roast.bitThr) * 8.5) +
-        roast.bitBase +
-        temperatureShift * 9,
-    ),
+    bitter: clamp(Math.max(0, (extraction - roast.bitThr) * 7) + roast.bitBase),
     body: clamp(
-      34 + (extraction - 16) * 2.2 + roast.body + process.body + minerals * 22,
+      32 + (extraction - 16) * 2 + roast.body + process.body + minerals * 10,
     ),
   };
 }
@@ -462,7 +456,7 @@ export function taste(state: SimulatorState): TasteResult {
   let bitter = 0;
   let body = 0;
   simulation.zones.forEach((zone) => {
-    const flavor = flavorAtEY(clamp(zone.ey, 12, 29), state, simulation.Teff);
+    const flavor = flavorAtEY(clamp(zone.ey, 12, 29), state);
     acid += zone.m * flavor.acid;
     sweet += zone.m * flavor.sweet;
     bitter += zone.m * flavor.bitter;
@@ -575,6 +569,8 @@ export function character(
   if (result.ey < 17.6)
     return { kind: "under", headline: "偏酸、单薄 · 像没睡醒" };
   if (result.ey > 23) return { kind: "over", headline: "苦涩失衡 · 发干" };
+  if (result.bypass >= 0.08)
+    return { kind: "under", headline: "旁路偏高 · 风味被稀释" };
   if (result.uni < 58 && inBand)
     return { kind: "uneven", headline: "参数没瞄错，但冲散了 · 有点浑" };
   if (result.astr > 55 && inBand)
