@@ -4,7 +4,10 @@ import {
   dimensionMeta,
   type BrewDimensions,
   type PourStep,
-  type Recipe,
+  type RecipeContent,
+  formatDuration,
+  formatRatio,
+  formatTemperature,
 } from "./models";
 
 export function Loading() {
@@ -140,18 +143,20 @@ export function Field({
   onChange,
   placeholder = "",
   type = "text",
+  required = true,
 }: {
   label: string;
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
   type?: string;
+  required?: boolean;
 }) {
   return (
     <label className="field">
       <span>{label}</span>
       <input
-        required
+        required={required}
         value={value}
         type={type}
         placeholder={placeholder}
@@ -191,13 +196,18 @@ export function Choice({
   );
 }
 
-export function Specs({ recipe }: { recipe: Recipe }) {
+export function Specs({ recipe }: { recipe: RecipeContent }) {
   const specs = [
-    ["粉水比", recipe.ratio],
+    ["粉水比", `1:${formatRatio(recipe)}`],
+    ["咖啡粉", `${recipe.coffeeGrams}g`],
+    ["冲煮水", `${recipe.brewWaterGrams}g`],
+    ...(recipe.method === "冰冲" || recipe.iceGrams
+      ? [["冰", `${recipe.iceGrams}g`]]
+      : []),
     ["研磨", recipe.grind],
-    ["水温", recipe.temp],
+    ["水温", formatTemperature(recipe.temperatureC)],
     ["注水", recipe.pour || "—"],
-    ["总时间", recipe.time],
+    ["总时间", formatDuration(recipe.durationSeconds)],
     ["方式", recipe.method],
   ];
   return (
@@ -217,10 +227,10 @@ export function Steps({ steps }: { steps: PourStep[] }) {
   return (
     <div className="steps">
       {steps.map((step, index) => (
-        <div className="step" key={`${index}-${step.t}`}>
+        <div className="step" key={`${index}-${step.atSeconds}`}>
           <b>{index + 1}</b>
-          <span>{step.t}</span>
-          <strong>{step.water}</strong>
+          <span>{formatDuration(step.atSeconds)}</span>
+          <strong>→ {step.targetWaterGrams}g</strong>
           <em>{step.note}</em>
         </div>
       ))}

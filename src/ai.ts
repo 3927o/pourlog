@@ -4,13 +4,24 @@ import type {
   Bean,
   BrewDimensions,
   BrewMethod,
-  Recipe,
+  RecipeContent,
 } from "./models";
+import { formatRatio, formatTemperature, formatDuration } from "./models";
 
 const stepSchema = z.object({
-  t: z.string(),
-  water: z.string(),
+  atSeconds: z.number().nonnegative(),
+  targetWaterGrams: z.number().nonnegative(),
   note: z.string().default(""),
+});
+const contentSchema = z.object({
+  coffeeGrams: z.number().positive(),
+  brewWaterGrams: z.number().positive(),
+  iceGrams: z.number().nonnegative(),
+  grind: z.string().min(1),
+  temperatureC: z.number().nullable(),
+  durationSeconds: z.number().positive(),
+  pour: z.string().default(""),
+  steps: z.array(stepSchema),
 });
 const analysisSchema = z.object({
   variable: z.string(),
@@ -20,14 +31,7 @@ const analysisSchema = z.object({
   principle: z.string(),
   advanced: z.array(z.string()).default([]),
 });
-const suggestionSchema = z.object({
-  ratio: z.string(),
-  grind: z.string(),
-  temp: z.string(),
-  time: z.string(),
-  steps: z.array(stepSchema),
-  why: z.string(),
-});
+const suggestionSchema = z.object({ content: contentSchema, why: z.string() });
 
 function extractJson(content: string): unknown {
   const match = content.trim().match(/\{[\s\S]*\}/);
@@ -65,7 +69,7 @@ export async function callAI(
 export async function analyzeCup(
   settings: AppSettings,
   bean: Bean,
-  recipe: Recipe,
+  recipe: RecipeContent,
   dims: BrewDimensions,
   notes: string,
 ) {
@@ -77,7 +81,7 @@ export async function analyzeCup(
     },
     {
       role: "user",
-      content: `豆：${bean.name}（${bean.origin}），${bean.process}/${bean.roast}。\n本次配方：${recipe.ratio} · ${recipe.grind} · ${recipe.temp} · ${recipe.time}。\n六维口感（1-5）：酸${dims.acid} 甜${dims.sweet} 苦${dims.bitter} 干净度${dims.clean} 余韵${dims.finish} 醇厚${dims.body}。\n备注：${notes || "无"}。\n严格只返回JSON：{"variable":"变量名","from":"当前值","to":"建议值","reason":"结合评分说明因果，60字内","principle":"单变量原则提醒","advanced":["进阶建议1","进阶建议2"]}`,
+      content: `豆：${bean.name}（${bean.origin}），${bean.process}/${bean.roast}。\n本次配方：1:${formatRatio(recipe)} · ${recipe.grind} · ${formatTemperature(recipe.temperatureC)} · ${formatDuration(recipe.durationSeconds)}。\n六维口感（1-5）：酸${dims.acid} 甜${dims.sweet} 苦${dims.bitter} 干净度${dims.clean} 余韵${dims.finish} 醇厚${dims.body}。\n备注：${notes || "无"}。\n严格只返回JSON：{"variable":"变量名","from":"当前值","to":"建议值","reason":"结合评分说明因果，60字内","principle":"单变量原则提醒","advanced":["进阶建议1","进阶建议2"]}`,
     },
   ]);
   return { ...analysisSchema.parse(result), source: "ai" as const };
@@ -92,23 +96,28 @@ export async function suggestRecipe(
     {
       role: "system",
       content:
-        "你是一位专业手冲咖啡师。根据豆子特性给出一套完整、分步可执行的手冲配方。使用简体中文。",
+        "你是一位专业手冲咖啡师。根据豆子特性给出一套结构化、分步可执行的配方。克重和秒数必须是有效数字，步骤水量使用累计冲煮水且不包含冰。使用简体中文。",
     },
     {
       role: "user",
-      content: `为这支豆推荐一套【${method}】配方。\n豆：${bean.name}（${bean.origin}），${bean.process}/${bean.roast}，风味 ${bean.flavors.join("/")}。\n严格只返回JSON：{"ratio":"1:16","grind":"中细","temp":"90°C","time":"2:30","steps":[{"t":"0:00","water":"0→40g","note":"闷蒸"}],"why":"推荐理由，60字内"}`,
+      content: `为这支豆推荐一套【${method}】配方。\n豆：${bean.name}（${bean.origin}），${bean.process}/${bean.roast}，风味 ${bean.flavors.join("/")}。\n严格只返回JSON：{"content":{"coffeeGrams":15,"brewWaterGrams":240,"iceGrams":0,"grind":"中细","temperatureC":90,"durationSeconds":150,"pour":"三段注水","steps":[{"atSeconds":0,"targetWaterGrams":40,"note":"闷蒸"}]},"why":"推荐理由，60字内"}`,
     },
   ]);
-  return { ...suggestionSchema.parse(result), source: "ai" as const };
+  const parsed = suggestionSchema.parse(result);
+  return {
+    ...parsed,
+    content: { method, ...parsed.content },
+    source: "ai" as const,
+  };
 }
 
-export function localAnalysis(recipe: Recipe, d: BrewDimensions) {
-  const temp = Number.parseInt(recipe.temp) || 92;
+export function localAnalysis(recipe: RecipeContent, d: BrewDimensions) {
+  const temperature = recipe.temperatureC ?? 20;
   if (d.bitter >= 4 || d.clean <= 2)
     return {
       variable: "水温",
-      from: `${temp}°C`,
-      to: `${temp - 4}°C`,
+      from: formatTemperature(recipe.temperatureC),
+      to: `${temperature - 4}°C`,
       reason: `苦味 ${d.bitter}、干净度 ${d.clean}，降低水温可减少过度萃取带来的苦味与杂味。`,
       principle: "一次只动这一个变量，才能确认因果。",
       advanced: ["研磨可略粗半格", "第三段注水提早 5 秒收尾"],
@@ -127,7 +136,7 @@ export function localAnalysis(recipe: Recipe, d: BrewDimensions) {
   if (d.sweet <= 2)
     return {
       variable: "粉水比",
-      from: recipe.ratio,
+      from: `1:${formatRatio(recipe)}`,
       to: "1:15",
       reason: `甜感 ${d.sweet} 偏低，提高浓度通常能带出更明显的甜感。`,
       principle: "只改粉水比，其余参数不动。",
@@ -146,45 +155,60 @@ export function localAnalysis(recipe: Recipe, d: BrewDimensions) {
 }
 
 export function localSuggestion(bean: Bean, method: BrewMethod) {
-  if (method === "冷萃") {
+  if (method === "冷萃")
     return {
-      ratio: "1:12",
-      grind: "粗研磨",
-      temp: "冷水 / 室温水",
-      time: "8–12h",
-      steps: [{ t: "0:00", water: "按 1:12 一次注满", note: "搅匀后冷藏浸泡" }],
+      content: {
+        method,
+        coffeeGrams: 50,
+        brewWaterGrams: 600,
+        iceGrams: 0,
+        grind: "粗研磨",
+        temperatureC: null,
+        durationSeconds: 36000,
+        pour: "浸泡",
+        steps: [
+          { atSeconds: 0, targetWaterGrams: 600, note: "搅匀后冷藏浸泡" },
+        ],
+      },
       why: `${bean.roast}${bean.process}豆使用粗研磨冷藏浸泡，减少苦涩并保留${bean.flavors[0] || "主要风味"}。`,
       source: "local" as const,
     };
-  }
-
-  const temp =
-    bean.roast === "浅烘" ? "92°C" : bean.roast === "深烘" ? "86°C" : "89°C";
+  const temperatureC =
+    bean.roast === "浅烘" ? 92 : bean.roast === "深烘" ? 86 : 89;
   const grind =
     bean.roast === "浅烘"
       ? "中细偏细"
       : bean.roast === "深烘"
         ? "中细偏粗"
         : "中细";
+  const iced = method === "冰冲";
   return {
-    ratio: method === "冰冲" ? "1:15" : "1:16",
-    grind,
-    temp,
-    time: method === "冰冲" ? "2:00" : "2:30",
-    steps:
-      method === "冰冲"
+    content: {
+      method,
+      coffeeGrams: 15,
+      brewWaterGrams: iced ? 160 : 240,
+      iceGrams: iced ? 65 : 0,
+      grind,
+      temperatureC,
+      durationSeconds: iced ? 120 : 150,
+      pour: "三段注水",
+      steps: iced
         ? [
-            { t: "0:00", water: "分享壶放 80g 冰", note: "咖啡液直接落冰" },
-            { t: "0:00", water: "0→36g", note: "闷蒸" },
-            { t: "0:30", water: "36→100g", note: "第二段绕圈" },
-            { t: "1:05", water: "100→160g", note: "收尾后摇匀" },
+            {
+              atSeconds: 0,
+              targetWaterGrams: 36,
+              note: "闷蒸，分享壶放 65g 冰",
+            },
+            { atSeconds: 30, targetWaterGrams: 100, note: "第二段绕圈" },
+            { atSeconds: 65, targetWaterGrams: 160, note: "收尾后摇匀" },
           ]
         : [
-            { t: "0:00", water: "0→36g", note: "闷蒸" },
-            { t: "0:30", water: "36→150g", note: "第二段绕圈" },
-            { t: "1:10", water: "150→240g", note: "收尾" },
+            { atSeconds: 0, targetWaterGrams: 36, note: "闷蒸" },
+            { atSeconds: 30, targetWaterGrams: 150, note: "第二段绕圈" },
+            { atSeconds: 70, targetWaterGrams: 240, note: "收尾" },
           ],
-    why: `${bean.roast}${bean.process}豆，${temp} 配合${grind}研磨可平衡萃取，凸显${bean.flavors[0] || "主要风味"}。`,
+    },
+    why: `${bean.roast}${bean.process}豆，${temperatureC}°C 配合${grind}研磨可平衡萃取，凸显${bean.flavors[0] || "主要风味"}。`,
     source: "local" as const,
   };
 }

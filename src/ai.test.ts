@@ -17,16 +17,17 @@ describe("local recipe suggestions", () => {
   it("uses cold water and coarse grind for cold brew", () => {
     const suggestion = localSuggestion(bean, "冷萃");
 
-    expect(suggestion.temp).toContain("冷水");
-    expect(suggestion.grind).toBe("粗研磨");
-    expect(suggestion.time).toBe("8–12h");
+    expect(suggestion.content.temperatureC).toBeNull();
+    expect(suggestion.content.grind).toBe("粗研磨");
+    expect(suggestion.content.durationSeconds).toBe(36000);
   });
 
   it("accounts for ice separately in an iced pour-over", () => {
     const suggestion = localSuggestion(bean, "冰冲");
 
-    expect(suggestion.ratio).toBe("1:15");
-    expect(suggestion.steps[0]?.water).toContain("80g 冰");
-    expect(suggestion.steps.at(-1)?.water).toBe("100→160g");
+    expect(suggestion.content.coffeeGrams).toBe(15);
+    expect(suggestion.content.brewWaterGrams).toBe(160);
+    expect(suggestion.content.iceGrams).toBe(65);
+    expect(suggestion.content.steps.at(-1)?.targetWaterGrams).toBe(160);
   });
 });
