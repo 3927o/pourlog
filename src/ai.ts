@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { DEFAULT_AI_SETTINGS } from "./aiConfig";
 import type {
+  AIEndpointSettings,
   AppSettings,
   Bean,
   BrewDimensions,
@@ -33,6 +34,40 @@ const analysisSchema = z.object({
   advanced: z.array(z.string()).default([]),
 });
 const suggestionSchema = z.object({ content: contentSchema, why: z.string() });
+const beanRecognitionSchema = z.object({
+  name: z.string().default(""),
+  origin: z.string().default(""),
+  process: z.enum(["", "水洗", "日晒", "蜜处理", "厌氧", "湿刨"]).default(""),
+  roast: z.enum(["", "浅烘", "中烘", "深烘"]).default(""),
+  roastDate: z
+    .string()
+    .refine((value) => !value || /^\d{2}\.\d{2}$/.test(value))
+    .default(""),
+  flavors: z.array(z.string()).max(6).default([]),
+  confidence: z.number().min(0).max(1),
+  uncertainFields: z
+    .array(
+      z.enum(["name", "origin", "process", "roast", "roastDate", "flavors"]),
+    )
+    .default([]),
+});
+
+type AIContent =
+  | string
+  | Array<
+      | { type: "text"; text: string }
+      | {
+          type: "image_url";
+          image_url: { url: string; detail?: "auto" | "low" | "high" };
+        }
+    >;
+
+export interface AIMessage {
+  role: "system" | "user";
+  content: AIContent;
+}
+
+export type BeanRecognition = z.infer<typeof beanRecognitionSchema>;
 
 function extractJson(content: string): unknown {
   const match = content.trim().match(/\{[\s\S]*\}/);
@@ -41,8 +76,8 @@ function extractJson(content: string): unknown {
 }
 
 export async function callAI(
-  settings: AppSettings,
-  messages: Array<{ role: "system" | "user"; content: string }>,
+  settings: AIEndpointSettings,
+  messages: AIMessage[],
 ) {
   const base = settings.apiBase.replace(/\/+$/, "");
   const response = await fetch(`${base}/chat/completions`, {
@@ -65,6 +100,42 @@ export async function callAI(
     choices?: Array<{ message?: { content?: string } }>;
   };
   return extractJson(data.choices?.[0]?.message?.content ?? "");
+}
+
+export async function recognizeBeanLabel(
+  settings: AIEndpointSettings,
+  imageDataUrl: string,
+) {
+  const result = await callAI(settings, [
+    {
+      role: "system",
+      content:
+        "你是一位严谨的咖啡豆包装标签识别助手。只提取图片中明确可见的信息，不要凭常识补全。使用简体中文。处理法只归一为水洗、日晒、蜜处理、厌氧、湿刨；烘焙度只归一为浅烘、中烘、深烘。烘焙日期统一为 MM.DD，无法确认的文字字段返回空字符串，风味无法确认时返回空数组。confidence 表示整份结果的可信度，uncertainFields 列出模糊或推断成分较高的字段。",
+    },
+    {
+      role: "user",
+      content: [
+        {
+          type: "text",
+          text: '识别这张咖啡豆包装标签。严格只返回 JSON：{"name":"豆名或批次名","origin":"国家 · 产区 · 庄园（按可见信息组合）","process":"水洗","roast":"浅烘","roastDate":"07.15","flavors":["风味1","风味2"],"confidence":0.85,"uncertainFields":["roastDate"]}',
+        },
+        {
+          type: "image_url",
+          image_url: { url: imageDataUrl },
+        },
+      ],
+    },
+  ]);
+  const parsed = beanRecognitionSchema.safeParse(result);
+  if (!parsed.success) throw new Error("模型返回的豆子信息格式不完整，请重试");
+  return {
+    ...parsed.data,
+    name: parsed.data.name.trim(),
+    origin: parsed.data.origin.trim(),
+    flavors: [
+      ...new Set(parsed.data.flavors.map((item) => item.trim())),
+    ].filter(Boolean),
+  };
 }
 
 export async function analyzeCup(

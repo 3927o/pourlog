@@ -13,12 +13,16 @@ import {
   useSearchParams,
 } from "react-router-dom";
 import { useLiveQuery } from "dexie-react-hooks";
+import { Camera } from "lucide-react";
 import {
   analyzeCup,
   localAnalysis,
   localSuggestion,
+  recognizeBeanLabel,
   suggestRecipe,
+  type BeanRecognition,
 } from "./ai";
+import { visionAISettings, withAISettingsDefaults } from "./aiConfig";
 import {
   db,
   deleteBean,
@@ -57,6 +61,7 @@ import {
   type RecipeSnapshot,
   type SavedRecipe,
 } from "./models";
+import { prepareBeanLabelImage } from "./image";
 import {
   buildExperimentPlan,
   experimentImpacts,
@@ -82,6 +87,18 @@ const emptyContent: RecipeContent = {
   durationSeconds: 150,
   pour: "三段注水",
   steps: [],
+};
+
+const recognitionFieldLabels: Record<
+  BeanRecognition["uncertainFields"][number],
+  string
+> = {
+  name: "名称",
+  origin: "产区",
+  process: "处理法",
+  roast: "烘焙度",
+  roastDate: "烘焙日",
+  flavors: "风味",
 };
 
 function dateLabel(value: number) {
@@ -567,6 +584,7 @@ export function BeanForm() {
         : { journals: 0, suggestions: 0 },
     [id],
   );
+  const settings = useLiveQuery(() => db.settings.get("main"), [], null);
   const [form, setForm] = useState({
     name: "",
     origin: "",
@@ -575,6 +593,12 @@ export function BeanForm() {
     roastDate: "",
     flavors: [] as string[],
   });
+  const [recognition, setRecognition] = useState<BeanRecognition>();
+  const [scanBusy, setScanBusy] = useState(false);
+  const [scanError, setScanError] = useState<{
+    message: string;
+    settings?: boolean;
+  }>();
   useEffect(() => {
     if (existing)
       setForm({
@@ -586,7 +610,7 @@ export function BeanForm() {
         flavors: existing.flavors,
       });
   }, [existing]);
-  if ((id && existing === null) || !impact)
+  if ((id && existing === null) || !impact || settings === null)
     return (
       <Page nav={false}>
         <Loading />
@@ -594,6 +618,53 @@ export function BeanForm() {
     );
   if (id && !existing) return <NotFound message="豆子不存在或已被删除" />;
   const currentImpact = impact;
+  const currentSettings = withAISettingsDefaults(settings ?? {});
+  async function chooseImage(file?: File) {
+    if (!file) return;
+    setScanBusy(true);
+    setScanError(undefined);
+    setRecognition(undefined);
+    try {
+      let prepared: Awaited<ReturnType<typeof prepareBeanLabelImage>>;
+      try {
+        prepared = await prepareBeanLabelImage(file);
+      } catch (caught) {
+        setScanError({
+          message: caught instanceof Error ? caught.message : String(caught),
+        });
+        return;
+      }
+      const visionSettings = visionAISettings(currentSettings);
+      if (!visionSettings.apiBase || !visionSettings.apiKey) {
+        setScanError({
+          message: "请先在 AI 设置中配置支持图片的模型",
+          settings: true,
+        });
+        return;
+      }
+      const result = await recognizeBeanLabel(visionSettings, prepared.dataUrl);
+      setRecognition(result);
+      setForm((current) => ({
+        name: result.name || current.name,
+        origin: result.origin || current.origin,
+        process: result.process || current.process,
+        roast: result.roast || current.roast,
+        roastDate: result.roastDate || current.roastDate,
+        flavors: result.flavors.length ? result.flavors : current.flavors,
+      }));
+    } catch (caught) {
+      const message = caught instanceof Error ? caught.message : String(caught);
+      const unsupported = /image|vision|multimodal|图片|视觉/i.test(message);
+      setScanError({
+        message: unsupported
+          ? "当前模型可能不支持图片识别，请在设置中更换视觉模型"
+          : message,
+        settings: unsupported,
+      });
+    } finally {
+      setScanBusy(false);
+    }
+  }
   async function submit(event: FormEvent) {
     event.preventDefault();
     const beanId = id || uid();
@@ -622,7 +693,47 @@ export function BeanForm() {
       <Page nav={false}>
         <form className="content form" onSubmit={submit}>
           <Back to={id ? `/beans/${id}` : "/beans"} />
-          <h1>{id ? "编辑豆子" : "录入豆子"}</h1>
+          <div className="bean-form-title">
+            <h1>{id ? "编辑豆子" : "录入豆子"}</h1>
+            <label
+              className="bean-camera-button"
+              aria-label="拍摄或选择豆袋照片并识别"
+              title="拍摄或选择豆袋照片"
+            >
+              <input
+                type="file"
+                accept="image/*"
+                capture="environment"
+                disabled={scanBusy}
+                onChange={(event) => {
+                  void chooseImage(event.target.files?.[0]);
+                  event.target.value = "";
+                }}
+              />
+              <Camera aria-hidden="true" size={24} strokeWidth={1.7} />
+            </label>
+          </div>
+          {scanBusy && <p className="scan-status">正在识别豆袋标签…</p>}
+          {recognition && !scanBusy && (
+            <p className="scan-result">
+              已填入识别结果 · {Math.round(recognition.confidence * 100)}%
+              {recognition.uncertainFields.length > 0 &&
+                ` · 请确认 ${recognition.uncertainFields
+                  .map((field) => recognitionFieldLabels[field])
+                  .join("、")}`}
+            </p>
+          )}
+          {scanError && !scanBusy && (
+            <p className="scan-error">
+              {scanError.message}
+              {scanError.settings && (
+                <>
+                  {" "}
+                  · <Link to="/settings">AI 设置</Link>
+                </>
+              )}
+            </p>
+          )}
           <Field
             label="名称 NAME"
             value={form.name}
@@ -635,7 +746,7 @@ export function BeanForm() {
           />
           <Choice
             label="处理法 PROCESS"
-            values={["水洗", "日晒", "蜜处理"]}
+            values={["水洗", "日晒", "蜜处理", "厌氧", "湿刨"]}
             value={form.process}
             onChange={(process) => setForm({ ...form, process })}
           />

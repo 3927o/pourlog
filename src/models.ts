@@ -92,11 +92,17 @@ export interface Journal {
   savedAsRecipeId?: string;
 }
 
-export interface AppSettings {
-  id: "main";
+export interface AIEndpointSettings {
   apiBase: string;
   apiKey: string;
   model: string;
+}
+
+export interface AppSettings extends AIEndpointSettings {
+  id: "main";
+  visionApiBase: string;
+  visionApiKey: string;
+  visionModel: string;
 }
 
 export const dimensionMeta: Array<{

@@ -49,6 +49,7 @@ describe("database initialization", () => {
 
   it("marks an existing database without adding demo records", async () => {
     await db.settings.add({
+      ...DEFAULT_AI_SETTINGS,
       id: "main",
       apiBase: "",
       apiKey: "",
@@ -85,6 +86,7 @@ describe("database initialization", () => {
   it("upgrades legacy empty AI settings to the bundled default", async () => {
     await seedDatabase();
     await db.settings.put({
+      ...DEFAULT_AI_SETTINGS,
       id: "main",
       apiBase: "",
       apiKey: "",
@@ -94,6 +96,40 @@ describe("database initialization", () => {
     await seedDatabase();
 
     expect(await db.settings.get("main")).toEqual(DEFAULT_AI_SETTINGS);
+  });
+
+  it("adds vision settings without changing an existing text AI config", async () => {
+    db.close();
+    await Dexie.delete("pourlog");
+    const legacy = new Dexie("pourlog");
+    legacy.version(5).stores({
+      beans: "id, no, name, bestJournalId",
+      recipes: "id, method, updatedAt",
+      journals: "id, beanId, createdAt, savedAsRecipeId",
+      aiSuggestions: "id, beanId, [beanId+method], generatedAt, savedRecipeId",
+      settings: "id",
+      meta: "id",
+    });
+    await legacy.open();
+    await legacy.table("settings").add({
+      id: "main",
+      apiBase: "https://api.deepseek.com",
+      apiKey: "existing-key",
+      model: "deepseek-chat",
+    });
+    legacy.close();
+
+    await db.open();
+    const migrated = await db.settings.get("main");
+
+    expect(migrated).toMatchObject({
+      apiBase: "https://api.deepseek.com",
+      apiKey: "existing-key",
+      model: "deepseek-chat",
+      visionApiBase: DEFAULT_AI_SETTINGS.visionApiBase,
+      visionApiKey: DEFAULT_AI_SETTINGS.visionApiKey,
+      visionModel: "qwen3.7-plus",
+    });
   });
 
   it("allocates a number above the highest existing bean number", async () => {

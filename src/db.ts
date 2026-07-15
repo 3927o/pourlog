@@ -1,5 +1,9 @@
 import Dexie, { type EntityTable, type Transaction } from "dexie";
-import { DEFAULT_AI_SETTINGS, isLegacyEmptyAISettings } from "./aiConfig";
+import {
+  DEFAULT_AI_SETTINGS,
+  isLegacyEmptyAISettings,
+  withAISettingsDefaults,
+} from "./aiConfig";
 import type {
   AiSuggestion,
   AppSettings,
@@ -207,6 +211,22 @@ class PourlogDB extends Dexie {
       .upgrade(async (transaction) =>
         alignExampleJournalDimensions(transaction),
       );
+    this.version(6)
+      .stores({
+        beans: "id, no, name, bestJournalId",
+        recipes: "id, method, updatedAt",
+        journals: "id, beanId, createdAt, savedAsRecipeId",
+        aiSuggestions:
+          "id, beanId, [beanId+method], generatedAt, savedRecipeId",
+        settings: "id",
+        meta: "id",
+      })
+      .upgrade(async (transaction) => {
+        const settingsTable = transaction.table("settings");
+        const settings = (await settingsTable.get("main")) as
+          Partial<AppSettings> | undefined;
+        if (settings) await settingsTable.put(withAISettingsDefaults(settings));
+      });
   }
 }
 
