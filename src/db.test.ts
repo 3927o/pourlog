@@ -6,9 +6,14 @@ import {
   deleteBean,
   deleteJournal,
   deleteRecipe,
+  markBeanOpened,
+  markRecipeOpened,
   migrateLegacyRecipe,
+  nextBeanActivityAt,
   nextBeanNumber,
+  nextRecipeActivityAt,
   seedDatabase,
+  sortByRecentActivity,
 } from "./db";
 import { recipeToBrewDimensions } from "./simulator/experiment";
 
@@ -137,6 +142,78 @@ describe("database initialization", () => {
     await db.beans.delete("hl");
 
     expect(await nextBeanNumber()).toBe("04");
+  });
+
+  it("orders beans and recipes by edits or opens without changing edit times", async () => {
+    await seedDatabase();
+    await db.beans.update("yr", { updatedAt: 100, lastOpenedAt: undefined });
+    await db.beans.update("hl", { updatedAt: 200, lastOpenedAt: undefined });
+    await db.beans.update("gs", { updatedAt: 50, lastOpenedAt: undefined });
+    await db.recipes.update("v60", { updatedAt: 100, lastOpenedAt: undefined });
+    await db.recipes.update("one", { updatedAt: 200, lastOpenedAt: undefined });
+    await db.recipes.update("ice", { updatedAt: 50, lastOpenedAt: undefined });
+    await db.recipes.update("mine", { updatedAt: 25, lastOpenedAt: undefined });
+
+    const beansByActivity = () =>
+      db.beans
+        .toArray()
+        .then((items) =>
+          sortByRecentActivity(items, (a, b) => b.no.localeCompare(a.no)),
+        );
+    const recipesByActivity = () =>
+      db.recipes
+        .toArray()
+        .then((items) =>
+          sortByRecentActivity(items, (a, b) => b.createdAt - a.createdAt),
+        );
+
+    expect((await beansByActivity())[0]?.id).toBe("hl");
+    expect((await recipesByActivity())[0]?.id).toBe("one");
+
+    await markBeanOpened("yr");
+    await markRecipeOpened("v60");
+
+    expect((await beansByActivity())[0]?.id).toBe("yr");
+    expect((await recipesByActivity())[0]?.id).toBe("v60");
+    expect((await db.beans.get("yr"))?.updatedAt).toBe(100);
+    expect((await db.recipes.get("v60"))?.updatedAt).toBe(100);
+    expect(await nextBeanActivityAt()).toBeGreaterThan(
+      (await db.beans.get("yr"))!.lastOpenedAt!,
+    );
+    expect(await nextRecipeActivityAt()).toBeGreaterThan(
+      (await db.recipes.get("v60"))!.lastOpenedAt!,
+    );
+  });
+
+  it("backfills update time for beans saved before activity sorting", async () => {
+    db.close();
+    await Dexie.delete("pourlog");
+    const legacy = new Dexie("pourlog");
+    legacy.version(6).stores({
+      beans: "id, no, name, bestJournalId",
+      recipes: "id, method, updatedAt",
+      journals: "id, beanId, createdAt, savedAsRecipeId",
+      aiSuggestions: "id, beanId, [beanId+method], generatedAt, savedRecipeId",
+      settings: "id",
+      meta: "id",
+    });
+    await legacy.open();
+    await legacy.table("beans").add({
+      id: "old-bean",
+      no: "07",
+      name: "旧豆子",
+      origin: "",
+      process: "水洗",
+      roast: "浅烘",
+      roastDate: "",
+      flavors: [],
+    });
+    legacy.close();
+
+    await db.open();
+    expect((await db.beans.get("old-bean"))?.updatedAt).toBe(0);
+    await markBeanOpened("old-bean");
+    expect((await db.beans.get("old-bean"))?.lastOpenedAt).toBeGreaterThan(0);
   });
 
   it("converts legacy string fields into structured recipe content", () => {

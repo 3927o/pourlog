@@ -227,6 +227,24 @@ class PourlogDB extends Dexie {
           Partial<AppSettings> | undefined;
         if (settings) await settingsTable.put(withAISettingsDefaults(settings));
       });
+    this.version(7)
+      .stores({
+        beans: "id, no, name, bestJournalId, updatedAt, lastOpenedAt",
+        recipes: "id, method, updatedAt, lastOpenedAt",
+        journals: "id, beanId, createdAt, savedAsRecipeId",
+        aiSuggestions:
+          "id, beanId, [beanId+method], generatedAt, savedRecipeId",
+        settings: "id",
+        meta: "id",
+      })
+      .upgrade((transaction) =>
+        transaction
+          .table("beans")
+          .toCollection()
+          .modify((bean: Bean) => {
+            if (bean.updatedAt === undefined) bean.updatedAt = 0;
+          }),
+      );
   }
 }
 
@@ -406,6 +424,7 @@ const beans: Bean[] = [
     roastDate: "06.28",
     flavors: ["柑橘", "茉莉", "红茶"],
     bestJournalId: "j1",
+    updatedAt: now,
   },
   {
     id: "hl",
@@ -416,6 +435,7 @@ const beans: Bean[] = [
     roast: "中烘",
     roastDate: "06.20",
     flavors: ["焦糖", "坚果", "橙皮"],
+    updatedAt: now,
   },
   {
     id: "gs",
@@ -426,6 +446,7 @@ const beans: Bean[] = [
     roast: "浅烘",
     roastDate: "07.02",
     flavors: ["白花", "荔枝", "蜂蜜"],
+    updatedAt: now,
   },
 ];
 
@@ -564,7 +585,7 @@ export async function saveContentAsRecipe(
   content: RecipeContent,
   source: SavedRecipe["source"],
 ) {
-  const timestamp = Date.now();
+  const timestamp = await nextRecipeActivityAt();
   const recipe: SavedRecipe = {
     id: uid(),
     name,
@@ -584,6 +605,52 @@ export async function nextBeanNumber() {
     0,
   );
   return String(highest + 1).padStart(2, "0");
+}
+
+type RecentItem = { id: string; updatedAt?: number; lastOpenedAt?: number };
+
+export function recentActivityAt(item: RecentItem) {
+  return Math.max(item.updatedAt ?? 0, item.lastOpenedAt ?? 0);
+}
+
+export function sortByRecentActivity<T extends RecentItem>(
+  items: T[],
+  compareTies: (a: T, b: T) => number,
+) {
+  return [...items].sort(
+    (a, b) => recentActivityAt(b) - recentActivityAt(a) || compareTies(a, b),
+  );
+}
+
+function nextActivityAt(items: RecentItem[]) {
+  return items.reduce(
+    (next, item) => Math.max(next, recentActivityAt(item) + 1),
+    Date.now(),
+  );
+}
+
+export async function nextBeanActivityAt() {
+  return nextActivityAt(await db.beans.toArray());
+}
+
+export async function nextRecipeActivityAt() {
+  return nextActivityAt(await db.recipes.toArray());
+}
+
+export async function markBeanOpened(id: string) {
+  await db.transaction("rw", db.beans, async () => {
+    const beans = await db.beans.toArray();
+    if (!beans.some((bean) => bean.id === id)) return;
+    await db.beans.update(id, { lastOpenedAt: nextActivityAt(beans) });
+  });
+}
+
+export async function markRecipeOpened(id: string) {
+  await db.transaction("rw", db.recipes, async () => {
+    const recipes = await db.recipes.toArray();
+    if (!recipes.some((recipe) => recipe.id === id)) return;
+    await db.recipes.update(id, { lastOpenedAt: nextActivityAt(recipes) });
+  });
 }
 
 export const uid = () => Math.random().toString(36).slice(2, 10);

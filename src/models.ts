@@ -32,6 +32,7 @@ export interface SavedRecipe extends RecipeContent {
   name: string;
   createdAt: number;
   updatedAt: number;
+  lastOpenedAt?: number;
   source?: {
     type: "manual" | "ai" | "journal";
     sourceId?: string;
@@ -57,6 +58,8 @@ export interface Bean {
   roastDate: string;
   flavors: string[];
   bestJournalId?: string;
+  updatedAt?: number;
+  lastOpenedAt?: number;
 }
 
 export interface AnalysisResult {

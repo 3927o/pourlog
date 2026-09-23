@@ -28,8 +28,13 @@ import {
   deleteBean,
   deleteJournal,
   deleteRecipe,
+  markBeanOpened,
+  markRecipeOpened,
+  nextBeanActivityAt,
   nextBeanNumber,
+  nextRecipeActivityAt,
   saveContentAsRecipe,
+  sortByRecentActivity,
   uid,
 } from "./db";
 import {
@@ -105,6 +110,16 @@ function dateLabel(value: number) {
   return new Intl.DateTimeFormat("zh-CN", { month: "2-digit", day: "2-digit" })
     .format(value)
     .replace("/", ".");
+}
+
+function fullDateLabel(value: number) {
+  return new Intl.DateTimeFormat("zh-CN", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  })
+    .format(value)
+    .replaceAll("/", ".");
 }
 
 function recipeLine(recipe: RecipeContent) {
@@ -260,7 +275,13 @@ function useConfirmDialog() {
 }
 
 export function BeansPage() {
-  const beans = useLiveQuery(() => db.beans.orderBy("no").toArray(), []);
+  const beans = useLiveQuery(
+    async () =>
+      sortByRecentActivity(await db.beans.toArray(), (a, b) =>
+        b.no.localeCompare(a.no),
+      ),
+    [],
+  );
   const journals = useLiveQuery(() => db.journals.toArray(), []);
   if (!beans || !journals)
     return (
@@ -279,7 +300,11 @@ export function BeansPage() {
       <section className="content cards bean-grid">
         {beans.map((bean) => (
           <article className="bean-card" key={bean.id}>
-            <Link className="card-link" to={`/beans/${bean.id}`}>
+            <Link
+              className="card-link"
+              to={`/beans/${bean.id}`}
+              onClick={() => void markBeanOpened(bean.id)}
+            >
               <div className="card-meta">
                 <span>
                   [{bean.no}] {bean.process} · {bean.roast} · {bean.roastDate}
@@ -305,7 +330,11 @@ export function BeansPage() {
                 ))}
               </div>
             </Link>
-            <Link className="primary small" to={`/brew/${bean.id}`}>
+            <Link
+              className="primary small"
+              to={`/brew/${bean.id}`}
+              onClick={() => void markBeanOpened(bean.id)}
+            >
               ▸ RUN BREW
             </Link>
           </article>
@@ -520,6 +549,9 @@ export function BeanDetail() {
                   <Link
                     className="ghost full"
                     to={`/recipes/${currentSuggestion.savedRecipeId}/edit`}
+                    onClick={() =>
+                      void markRecipeOpened(currentSuggestion.savedRecipeId!)
+                    }
                   >
                     已保存到配方库 · 查看
                   </Link>
@@ -668,11 +700,14 @@ export function BeanForm() {
   async function submit(event: FormEvent) {
     event.preventDefault();
     const beanId = id || uid();
+    const updatedAt = await nextBeanActivityAt();
     await db.beans.put({
       ...form,
       id: beanId,
       no: existing?.no || (await nextBeanNumber()),
       bestJournalId: existing?.bestJournalId,
+      updatedAt,
+      lastOpenedAt: existing?.lastOpenedAt,
     });
     navigate(`/beans/${beanId}`);
   }
@@ -790,7 +825,7 @@ export function BeanForm() {
 
 export function JournalPage() {
   const journals = useLiveQuery(
-    () => db.journals.reverse().sortBy("createdAt"),
+    () => db.journals.orderBy("createdAt").reverse().toArray(),
     [],
   );
   const beans = useLiveQuery(() => db.beans.toArray(), []);
@@ -817,10 +852,17 @@ export function JournalPage() {
               to={`/journal/${journal.id}`}
               key={journal.id}
             >
-              <div>
-                <h2>{bean?.name || "已删除豆子"}</h2>
-                <span>{dateLabel(journal.createdAt)} ›</span>
+              <div className="journal-card-heading">
+                <time
+                  className="journal-card-date"
+                  dateTime={new Date(journal.createdAt).toISOString()}
+                >
+                  <small>冲煮日期 / BREW DATE</small>
+                  <strong>{fullDateLabel(journal.createdAt)}</strong>
+                </time>
+                <span aria-hidden="true">›</span>
               </div>
+              <h2>{bean?.name || "已删除豆子"}</h2>
               <p>
                 <b>{journal.recipeSnapshot.method}</b>
                 {journal.recipeSnapshot.name}
@@ -973,6 +1015,9 @@ export function JournalDetail() {
                 <Link
                   className="ghost full"
                   to={`/recipes/${journal.savedAsRecipeId}/edit`}
+                  onClick={() =>
+                    void markRecipeOpened(journal.savedAsRecipeId!)
+                  }
                 >
                   已保存到配方库 · 查看
                 </Link>
@@ -1140,7 +1185,11 @@ export function BrewPage() {
     null,
   );
   const recipes = useLiveQuery(
-    () => db.recipes.orderBy("updatedAt").reverse().toArray(),
+    async () =>
+      sortByRecentActivity(
+        await db.recipes.toArray(),
+        (a, b) => b.createdAt - a.createdAt || b.id.localeCompare(a.id),
+      ),
     [],
   );
   const sourceJournalId = search.get("sourceJournal");
@@ -1199,6 +1248,7 @@ export function BrewPage() {
     setDraft(recipeSnapshotFrom(recipe));
     setDirty(false);
     setError("");
+    void markRecipeOpened(recipe.id);
   }
   function updateDraft(next: RecipeSnapshot) {
     setDraft(next);
@@ -1461,7 +1511,14 @@ function DimensionSlider({
 }
 
 export function RecipesPage() {
-  const recipes = useLiveQuery(() => db.recipes.toArray(), []);
+  const recipes = useLiveQuery(
+    async () =>
+      sortByRecentActivity(
+        await db.recipes.toArray(),
+        (a, b) => b.createdAt - a.createdAt || b.id.localeCompare(a.id),
+      ),
+    [],
+  );
   if (!recipes)
     return (
       <Page>
@@ -1482,6 +1539,7 @@ export function RecipesPage() {
               className="recipe-row"
               to={`/recipes/${recipe.id}/edit`}
               key={recipe.id}
+              onClick={() => void markRecipeOpened(recipe.id)}
             >
               <span>
                 <strong>{recipe.name}</strong>
@@ -1533,12 +1591,13 @@ export function RecipeForm() {
       setError(validation);
       return;
     }
-    const timestamp = Date.now();
+    const timestamp = await nextRecipeActivityAt();
     await db.recipes.put({
       ...form,
       id: id || uid(),
       createdAt: existing?.createdAt || timestamp,
       updatedAt: timestamp,
+      lastOpenedAt: existing?.lastOpenedAt,
       source: existing?.source,
     });
     navigate("/recipes");
