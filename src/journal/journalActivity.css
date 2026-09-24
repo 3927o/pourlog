@@ -1,0 +1,113 @@
+.journal-activity {
+  padding-top: 18px;
+  padding-bottom: 0;
+}
+.activity-card {
+  border: 1px solid var(--border);
+  background: var(--card);
+  padding: 17px 16px 13px;
+}
+.activity-heading,
+.activity-footer {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 12px;
+}
+.activity-heading small {
+  color: var(--accent);
+  font: 10px var(--font-mono);
+  letter-spacing: 0.08em;
+}
+.activity-heading h2 {
+  margin: 6px 0 0;
+  font-size: 19px;
+}
+.activity-heading p {
+  margin: 0;
+  color: var(--text-secondary);
+  font: 10px var(--font-mono);
+  white-space: nowrap;
+}
+.activity-heading strong {
+  color: var(--accent);
+  font: 700 27px var(--font-mono);
+}
+.activity-calendar {
+  display: grid;
+  grid-template-columns: 14px minmax(0, 1fr);
+  column-gap: 6px;
+  width: min(100%, 368px);
+  margin: 19px auto 0;
+}
+.activity-months,
+.activity-days {
+  display: grid;
+  grid-template-columns: repeat(var(--activity-weeks), minmax(0, 1fr));
+  column-gap: 3px;
+}
+.activity-months {
+  grid-column: 2;
+  height: 19px;
+  color: var(--text-secondary);
+  font: 10px var(--font-mono);
+}
+.activity-months span {
+  white-space: nowrap;
+}
+.activity-weekdays,
+.activity-days {
+  grid-row: 2;
+  grid-template-rows: repeat(7, minmax(0, 1fr));
+  row-gap: 3px;
+}
+.activity-weekdays {
+  grid-column: 1;
+  align-items: center;
+  color: var(--text-muted);
+  font: 10px var(--font-mono);
+}
+.activity-days {
+  grid-column: 2;
+  grid-auto-flow: column;
+}
+.activity-cell {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+}
+.activity-cell.level-0 {
+  background: #e1e8dd;
+}
+.activity-cell.level-1 {
+  background: #bed7b7;
+}
+.activity-cell.level-2 {
+  background: #91ba8d;
+}
+.activity-cell.level-3 {
+  background: #619666;
+}
+.activity-cell.level-4 {
+  background: var(--accent);
+}
+.activity-footer {
+  align-items: center;
+  margin-top: 18px;
+  padding-top: 12px;
+  border-top: 1px solid var(--surface-divider);
+  color: var(--text-secondary);
+  font: 10px var(--font-mono);
+}
+.activity-footer b {
+  color: var(--accent);
+  font-size: 14px;
+}
+.activity-legend {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.activity-legend .activity-cell {
+  width: 10px;
+}

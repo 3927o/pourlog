@@ -517,6 +517,9 @@ button:disabled {
   margin-right: 7px;
   font-size: 9px;
 }
+.journal-grid > .empty {
+  grid-column: 1 / -1;
+}
 .note {
   background: var(--card);
   border: 1px solid var(--border);

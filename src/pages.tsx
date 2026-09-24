@@ -67,6 +67,7 @@ import {
   type SavedRecipe,
 } from "./models";
 import { prepareBeanLabelImage } from "./image";
+import { JournalActivity } from "./journal/JournalActivity";
 import {
   buildExperimentPlan,
   experimentImpacts,
@@ -841,6 +842,9 @@ export function JournalPage() {
         eyebrow="POUR.LOG / 日记"
         title="冲煮日记"
         meta={`n = ${journals.length}`}
+      />
+      <JournalActivity
+        timestamps={journals.map((journal) => journal.createdAt)}
       />
       <section className="content cards journal-grid">
         {!journals.length && <div className="empty">// 还没有任何记录</div>}
