@@ -67,6 +67,7 @@ import {
   type SavedRecipe,
 } from "./models";
 import { prepareBeanLabelImage } from "./image";
+import { JournalHeatmap } from "./journalHeatmap";
 import {
   buildExperimentPlan,
   experimentImpacts,
@@ -842,6 +843,9 @@ export function JournalPage() {
         title="冲煮日记"
         meta={`n = ${journals.length}`}
       />
+      <section className="content journal-heatmap-section">
+        <JournalHeatmap journals={journals} />
+      </section>
       <section className="content cards journal-grid">
         {!journals.length && <div className="empty">// 还没有任何记录</div>}
         {journals.map((journal) => {
